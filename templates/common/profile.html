@@ -37,13 +37,9 @@
                     </div>
 
                     {% if user.role == 'student' and user.student_details %}
-                        <div class="col-md-6">
+                        <div class="col-md-12">
                             <label class="form-label text-muted small text-uppercase fw-semibold">University Roll Number</label>
                             <div class="form-control bg-light fw-bold text-primary">{{ user.student_details.roll_number }}</div>
-                        </div>
-                        <div class="col-md-6">
-                            <label class="form-label text-muted small text-uppercase fw-semibold">Department</label>
-                            <div class="form-control bg-light">{{ user.student_details.department }}</div>
                         </div>
                         <div class="col-md-4">
                             <label class="form-label text-muted small text-uppercase fw-semibold">Semester</label>
@@ -65,10 +61,6 @@
                         <div class="col-md-6">
                             <label class="form-label text-muted small text-uppercase fw-semibold">Designation</label>
                             <div class="form-control bg-light">{{ user.faculty_details.designation }}</div>
-                        </div>
-                        <div class="col-md-12">
-                            <label class="form-label text-muted small text-uppercase fw-semibold">Department</label>
-                            <div class="form-control bg-light">{{ user.faculty_details.department }}</div>
                         </div>
                     {% endif %}
 

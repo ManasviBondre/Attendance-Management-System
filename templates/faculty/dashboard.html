@@ -9,7 +9,7 @@
             <i class="fa-solid fa-chalkboard-user text-primary me-2"></i>
             Welcome, {{ current_user.full_name }}!
         </h1>
-        <p>Faculty Portal &bull; Department of Computer Science & Engineering &bull; Employee ID: {{ current_user.faculty_id }}</p>
+        <p>Faculty Portal &bull; Employee ID: {{ current_user.faculty_id }}</p>
     </div>
     <div>
         <a href="{{ url_for('faculty_mark_attendance') }}" class="btn btn-primary btn-lg shadow-sm">
@@ -32,7 +32,7 @@
                         </div>
                         <h5 class="card-title fw-bold text-dark mt-2">{{ subj.name }}</h5>
                         <p class="card-text text-muted small mb-3">
-                            {{ subj.department }} &bull; Semester {{ subj.semester }}
+                            Semester {{ subj.semester }}
                         </p>
 
                         <div class="row text-center border rounded py-2 mb-3 bg-light g-0">

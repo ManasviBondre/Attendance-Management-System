@@ -39,18 +39,20 @@ Upon inspecting the original codebase, database, templates, and configuration, t
 - **Nav Link Removal:** Removed `SEPM Report & Viva Guide` (`/sepm-docs`) link from `templates/base.html` navigation. Removed the dead template `templates/common/sepm_docs.html`.
 - **Demo Credential Clutter Removal:** Removed the demo credentials accordion from `templates/auth/login.html`.
 - **User Personalization:** Replaced generic greetings across Admin, Faculty, and Student dashboards with the authenticated user's actual name (e.g., `Hello, Rahul Sharma` or `Welcome, Prof. Ananya Iyer`).
-- **New Faculty Roster View:** Created route `/faculty/students` in `app.py` and template `templates/faculty/student_list.html`, allowing faculty to view all 47 enrolled students with roll numbers, contact emails, and assigned subjects.
+- **Department Branding Removal:** Completely purged mentions of "Department of Computer Science & Engineering" from post-login dashboards (`faculty/dashboard.html`, `student/dashboard.html`, `faculty/subject_stats.html`, `admin/reports.html`, `admin/subjects.html`), profile views, and registration forms.
+- **New Faculty Roster View:** Created route `/faculty/students` in `app.py` and template `templates/faculty/student_list.html`, allowing faculty to view all 46 enrolled students with roll numbers, contact emails, and assigned subjects.
 
 ### C. Realistic Database & Student Records
-- **45 Realistic Indian Student Names:** Replaced all celebrity names in `database.py` with realistic Indian names (Aarav Sharma, Aditi Rao, Rohan Gupta, Priya Nair, Aditya Joshi, Sneha Kulkarni, etc.).
-- **Preserved Existing Specific User Accounts:** Safely retained the existing student record `Manasvi Bondre` (Roll: `24001033`) and faculty record `Prof. Pranjali Deshmukh` (`FAC006`).
+- **45 Realistic Indian Student Names:** All celebrity names completely eliminated from `database.py` and `attendance_system.db`. Replaced with realistic Indian names (Aarav Sharma, Priya Patil, Rohan Deshmukh, Sneha Kulkarni, Aditya Joshi, etc.).
+- **Preserved Specific User Accounts:** Retained student record `Manasvi Bondre` (Roll: `24001033`) and faculty record `Prof. Pranjali Deshmukh` (`FAC006`).
 - **5 Core Subjects Standardized:** Exactly 5 subjects configured across database, faculty assignments, attendance marking, and reports:
   1. `CS601` — **MDM**
   2. `CS602` — **Theory of Computation**
   3. `CS603` — **Software Engineering and Project Management (SEPM)**
   4. `CS604` — **PE - Image Processing**
   5. `CS605` — **Machine Learning**
-- **Safe Database Migration:** Applied in-place updates to `attendance_system.db` without wiping historical attendance sessions or corrupting primary keys.
+- **Classes Conducted Capped to 30:** Seeded exactly 6 lectures per subject for 5 subjects, ensuring system-wide total sessions is **exactly 30**, and any student's total classes conducted across all subjects is **exactly 30**. No view or subject exceeds 30 conducted classes.
+- **Cartesian Join Bug Fix:** Fixed query in `models.py` (`get_student_dashboard_data`) using `COUNT(DISTINCT ses.id)` and `GROUP_CONCAT(DISTINCT uf.full_name)` so subjects with multiple co-faculty (like SEPM) do not artificially multiply session counts.
 
 ### D. Attendance Engine & Mathematical Precision
 - **Attendance Percentage Formula:**

@@ -716,10 +716,10 @@ def get_student_dashboard_data(student_user_id):
     # Subject-wise attendance calculation
     cursor.execute("""
         SELECT s.id as subject_id, s.code as subject_code, s.name as subject_name,
-               s.credits, uf.full_name as faculty_name,
-               COUNT(ses.id) as total_conducted,
-               SUM(CASE WHEN ar.status = 'Present' THEN 1 ELSE 0 END) as attended,
-               SUM(CASE WHEN ar.status = 'Absent' THEN 1 ELSE 0 END) as missed
+               s.credits, GROUP_CONCAT(DISTINCT uf.full_name) as faculty_name,
+               COUNT(DISTINCT ses.id) as total_conducted,
+               COUNT(DISTINCT CASE WHEN ar.status = 'Present' THEN ar.id ELSE NULL END) as attended,
+               COUNT(DISTINCT CASE WHEN ar.status = 'Absent' THEN ar.id ELSE NULL END) as missed
         FROM student_subjects ss
         JOIN subjects s ON ss.subject_id = s.id
         LEFT JOIN faculty_subjects fs ON s.id = fs.subject_id

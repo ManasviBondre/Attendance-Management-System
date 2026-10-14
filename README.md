@@ -7,7 +7,7 @@ A full-stack, production-quality Attendance Management System developed as a Sof
 ## 🌟 Key Features by User Role
 
 ### 🛡️ 1. Administrator Module
-- **Dashboard Analytics:** Instant overview of total students (47), faculty (6), subjects (5), attendance sessions, system-wide average attendance, and attendance defaulters count.
+- **Dashboard Analytics:** Instant overview of total students (46), faculty (6), subjects (5), attendance sessions (30), system-wide average attendance, and attendance defaulters count.
 - **User Lifecycle Management:** Add, view, update, toggle active/inactive status, or delete users across Administrator, Faculty, and Student roles.
 - **Subject Management:** Full curriculum management for all 5 core subjects with faculty assignment and student enrollment tracking.
 - **System-Wide Attendance Logs:** Searchable audit trail of every lecture conducted across all departments.
@@ -62,13 +62,13 @@ The application includes a pre-seeded, deterministic database containing realist
 | **Faculty (Image Proc)** | `prof.patel` | `sneha.patel@ams.edu` | `Password@123` | Prof. Sneha Patel — Teaches Image Processing |
 | **Faculty (MDM)** | `prof.verma` | `arvind.verma@ams.edu` | `Password@123` | Dr. Arvind Verma — Teaches MDM |
 | **Faculty (SEPM)** | `FAC006` | `pranjali.deshmukh@college.edu` | `Password@123` | Prof. Pranjali Deshmukh — Teaches SEPM |
-| **Student (High %)** | `22cs001` | `22cs001@student.ams.edu` | `Password@123` | Aarav Sharma — **95.0% Attendance (Eligible)** |
-| **Student (Safe %)** | `22cs002` | `22cs002@student.ams.edu` | `Password@123` | Aditi Rao — **80.0% Attendance (Eligible)** |
-| **Student (Defaulter %)**| `22cs003` | `22cs003@student.ams.edu` | `Password@123` | Rohan Gupta — **60.0% Attendance (Defaulter Alert)** |
-| **Student (Defaulter %)**| `22cs004` | `22cs004@student.ams.edu` | `Password@123` | Priya Nair — **55.0% Attendance (Defaulter Alert)** |
+| **Student (High %)** | `22cs001` | `22cs001@student.ams.edu` | `Password@123` | Aarav Sharma — **93.3% Attendance (Eligible)** |
+| **Student (Safe %)** | `22cs002` | `22cs002@student.ams.edu` | `Password@123` | Priya Patil — **80.0% Attendance (Eligible)** |
+| **Student (Defaulter %)**| `22cs003` | `22cs003@student.ams.edu` | `Password@123` | Rohan Deshmukh — **60.0% Attendance (Defaulter Alert)** |
+| **Student (Defaulter %)**| `22cs004` | `22cs004@student.ams.edu` | `Password@123` | Sneha Kulkarni — **53.3% Attendance (Defaulter Alert)** |
 | **Student (Account)**| `24001033`| `24001033@student.ams.edu` | `Password@123` | Manasvi Bondre — 6th Sem Student |
 
-> **Note on Student Logins:** All 47 students can log in using their roll numbers (`22cs001` through `22cs045`, plus `24001033`) with password `Password@123`.
+> **Note on Student Logins:** All 46 students can log in using their roll numbers (`22cs001` through `22cs045`, plus `24001033`) with password `Password@123`.
 
 ---
 

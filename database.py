@@ -178,13 +178,14 @@ def seed_database_if_empty():
         VALUES (?, ?, ?, ?, ?);
     """, subjects_data)
 
-    # 3. Create 5 Faculty Members
+    # 3. Create Faculty Members
     faculty_data = [
         ('prof.verma', 'arvind.verma@ams.edu', 'Dr. Arvind Verma', 'FAC001', 'Associate Professor', 'CS601'),
         ('dr.sharma', 'rajesh.sharma@ams.edu', 'Dr. Rajesh Sharma', 'FAC002', 'Professor & HOD', 'CS602'),
         ('prof.iyer', 'ananya.iyer@ams.edu', 'Prof. Ananya Iyer', 'FAC003', 'Assistant Professor', 'CS603'),
         ('prof.patel', 'sneha.patel@ams.edu', 'Prof. Sneha Patel', 'FAC004', 'Assistant Professor', 'CS604'),
-        ('dr.malhotra', 'vikram.malhotra@ams.edu', 'Dr. Vikram Malhotra', 'FAC005', 'Associate Professor', 'CS605')
+        ('dr.malhotra', 'vikram.malhotra@ams.edu', 'Dr. Vikram Malhotra', 'FAC005', 'Associate Professor', 'CS605'),
+        ('FAC006', 'pranjali.deshmukh@college.edu', 'Prof. Pranjali Deshmukh', 'FAC006', 'Assistant Professor', 'CS603')
     ]
 
     for uname, email, fname, fid, desig, subj_code in faculty_data:
@@ -240,6 +241,19 @@ def seed_database_if_empty():
         student_id = cursor.lastrowid
         student_db_ids.append((student_id, roll, name))
 
+    # Add Manasvi Bondre (roll 24001033)
+    cursor.execute("""
+        INSERT INTO users (username, email, password_hash, role, full_name, phone)
+        VALUES (?, ?, ?, 'student', ?, ?);
+    """, ('24001033', '24001033@student.ams.edu', test_password_hash, 'Manasvi Bondre', '+91 9700024001'))
+    manasvi_uid = cursor.lastrowid
+    cursor.execute("""
+        INSERT INTO students (user_id, roll_number, department, semester, section, batch_year)
+        VALUES (?, ?, 'Computer Science & Engineering', 6, 'A', '2022-2026');
+    """, (manasvi_uid, '24001033'))
+    manasvi_sid = cursor.lastrowid
+    student_db_ids.append((manasvi_sid, '24001033', 'Manasvi Bondre'))
+
     # Enroll all students in all 5 subjects
     cursor.execute("SELECT id FROM subjects;")
     all_subject_rows = cursor.fetchall()
@@ -261,9 +275,10 @@ def seed_database_if_empty():
     # - Priya Nair (22CS004): Low attendance (Defaulter) ~ 55%
     # - Other students range between 68% and 95%
     cursor.execute("""
-        SELECT fs.faculty_id, fs.subject_id, s.name, s.code
-        FROM faculty_subjects fs
-        JOIN subjects s ON fs.subject_id = s.id
+        SELECT MIN(fs.faculty_id) as faculty_id, s.id as subject_id, s.name, s.code
+        FROM subjects s
+        LEFT JOIN faculty_subjects fs ON s.id = fs.subject_id
+        GROUP BY s.id
         ORDER BY s.id;
     """)
     assignments = cursor.fetchall()
@@ -303,7 +318,7 @@ def seed_database_if_empty():
             "Database Schema Design for AMS", "Function Point & COCOMO Cost Estimation", "Risk Management & Mitigation Planning",
             "Gantt Charts & Critical Path Method", "Clean Code & Refactoring Practices", "Unit Testing & Integration Test Plans",
             "Black-box vs White-box Testing Techniques", "Software Quality Metrics & ISO Standards", "Version Control & CI/CD Pipelines",
-            "Software Maintenance & Re-engineering", "SEPM Project Review & Verification", "Final Project Assessment & Viva Prep"
+            "Software Maintenance & Re-engineering", "Software Quality Assurance & Code Reviews", "Agile Capstone Review & System Delivery"
         ],
         'CS604': [
             "Digital Image Fundamentals & Pixels", "Elements of Visual Perception",
@@ -325,10 +340,10 @@ def seed_database_if_empty():
         ]
     }
 
-    # Generate 20 distinct session dates
+    # Generate 6 distinct session dates (5 subjects * 6 = 30 total sessions system-wide)
     valid_dates = []
     curr = base_date
-    while len(valid_dates) < 20:
+    while len(valid_dates) < 6:
         # Weekdays only (Monday=0 to Friday=4)
         if curr.weekday() < 5:
             valid_dates.append(curr.strftime('%Y-%m-%d'))
@@ -355,36 +370,30 @@ def seed_database_if_empty():
                 stud_num = int(roll[4:])  # 1 to 45
 
                 # Deterministic attendance logic based on student number and session date:
-                # Student 1: >90% present
-                # Student 2: ~78% present
-                # Student 3 & 4: ~58-62% (Defaulter, alert triggered!)
-                # Student 5-10: 80-90%
-                # Student 11: 65% (Defaulter)
-                # Student 12-40: 75-92%
-                # Student 41-45: Mixed (some >80%, some ~70%)
+                # Student 1: 28/30 = 93.3% present (Eligible)
+                # Student 2: 24/30 = 80.0% present (Eligible)
+                # Student 3: 18/30 = 60.0% present (Defaulter)
+                # Student 4: 16/30 = 53.3% present (Defaulter)
+                # Student 11: 20/30 = 66.7% present (Defaulter)
+                # Student 25: 20/30 = 66.7% present (Defaulter)
+                # Others: 75-90% present
                 is_present = True
 
                 if stud_num == 1:
-                    is_present = (day_idx != 4)  # missed only 1 out of 20 = 95%
+                    is_present = not (subj_idx == 0 and day_idx == 4) and not (subj_idx == 2 and day_idx == 2)
                 elif stud_num == 2:
-                    is_present = (day_idx not in (3, 7, 12, 16))  # missed 4 out of 20 = 80%
+                    is_present = not (day_idx == 3 and subj_idx in (0, 1, 3)) and not (day_idx == 5 and subj_idx in (2, 4)) and not (day_idx == 1 and subj_idx == 0)
                 elif stud_num == 3:
-                    # Missed 8 out of 20 = 60%
-                    is_present = (day_idx not in (1, 3, 6, 8, 10, 13, 15, 18))
+                    is_present = (day_idx not in (1, 3)) and not (subj_idx in (0, 2) and day_idx == 5)
                 elif stud_num == 4:
-                    # Missed 9 out of 20 = 55%
-                    is_present = (day_idx not in (0, 2, 5, 7, 9, 12, 14, 16, 19))
+                    is_present = (day_idx not in (0, 2, 4)) or (subj_idx == 1 and day_idx == 0)
                 elif stud_num == 11:
-                    # Missed 7 out of 20 = 65%
-                    is_present = (day_idx not in (2, 4, 7, 11, 14, 17, 19))
+                    is_present = (day_idx not in (2, 5))
                 elif stud_num == 25:
-                    # Missed 7 out of 20 = 65%
-                    is_present = (day_idx not in (1, 5, 8, 10, 13, 16, 18))
+                    is_present = (day_idx not in (1, 4))
                 else:
-                    # Deterministic hash formula
                     hash_val = (stud_num * 17 + day_idx * 13 + subj_idx * 7) % 100
-                    # 82% overall attendance rate
-                    is_present = (hash_val >= 18)
+                    is_present = (hash_val >= 20)
 
                 status = 'Present' if is_present else 'Absent'
                 remarks = 'Present in lecture' if is_present else 'Unexcused Absence'

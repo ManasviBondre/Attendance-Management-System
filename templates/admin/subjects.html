@@ -25,7 +25,7 @@
                 <tr>
                     <th>Code</th>
                     <th>Subject Title</th>
-                    <th>Department & Sem</th>
+                    <th>Semester</th>
                     <th>Credits</th>
                     <th>Assigned Faculty</th>
                     <th class="text-center">Enrolled Students</th>
@@ -43,8 +43,7 @@
                             <div class="fw-bold text-dark fs-6">{{ subj.name }}</div>
                         </td>
                         <td>
-                            <div>{{ subj.department }}</div>
-                            <small class="text-muted">Semester {{ subj.semester }}</small>
+                            <span class="badge bg-light text-dark border">Semester {{ subj.semester }}</span>
                         </td>
                         <td>
                             <span class="badge bg-secondary-subtle text-secondary">{{ subj.credits }} Credits</span>

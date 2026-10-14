@@ -9,7 +9,7 @@
             <span class="badge bg-primary fs-4 me-2">{{ subject.code }}</span>
             {{ subject.name }}
         </h1>
-        <p>{{ subject.department }} &bull; Semester {{ subject.semester }} &bull; {{ subject.credits }} Credits</p>
+        <p>Semester {{ subject.semester }} &bull; {{ subject.credits }} Credits</p>
     </div>
     <div class="d-flex gap-2 no-print">
         <a href="{{ url_for('faculty_mark_attendance', subject_id=subject.id) }}" class="btn btn-primary">
