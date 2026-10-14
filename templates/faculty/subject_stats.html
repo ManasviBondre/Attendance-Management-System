@@ -41,8 +41,8 @@
         </div>
     </div>
     <div class="col-sm-6 col-md-3">
-        <div class="stat-card {% if avg_pct >= 75 %}stat-success{% else %}stat-danger{% endif %} h-100">
-            <div class="stat-value {% if avg_pct >= 75 %}text-success{% else %}text-danger{% endif %}">{{ avg_pct }}%</div>
+        <div class="stat-card {% if total_conducted > 0 and avg_pct >= 75 %}stat-success{% elif total_conducted > 0 %}stat-danger{% else %}stat-info{% endif %} h-100">
+            <div class="stat-value {% if total_conducted > 0 and avg_pct >= 75 %}text-success{% elif total_conducted > 0 %}text-danger{% else %}text-muted{% endif %}">{% if total_conducted > 0 %}{{ avg_pct }}%{% else %}N/A{% endif %}</div>
             <div class="stat-label">Class Average Attendance</div>
             <div class="text-muted small mt-1"><i class="fa-solid fa-chart-line me-1"></i>Mean Ratio</div>
         </div>
@@ -113,14 +113,16 @@
                         <td class="text-center text-danger fw-bold">{{ s.missed }}</td>
                         <td class="text-center">
                             <div class="d-flex align-items-center justify-content-center gap-2">
-                                <span class="fw-bold {% if s.percentage >= 75 %}text-success{% else %}text-danger{% endif %}">{{ s.percentage }}%</span>
+                                <span class="fw-bold {% if s.percentage and s.percentage >= 75 %}text-success{% elif s.percentage is not none %}text-danger{% else %}text-muted{% endif %}">{{ s.percentage_display }}</span>
                                 <div class="attendance-progress" style="width: 70px;">
-                                    <div class="attendance-progress-bar {% if s.percentage >= 75 %}progress-safe{% else %}progress-danger{% endif %}" style="width: {{ s.percentage }}%;"></div>
+                                    <div class="attendance-progress-bar {% if s.percentage and s.percentage >= 75 %}progress-safe{% else %}progress-danger{% endif %}" style="width: {{ s.percentage or 0 }}%;"></div>
                                 </div>
                             </div>
                         </td>
                         <td class="text-center">
-                            {% if s.is_defaulter %}
+                            {% if s.total_conducted == 0 %}
+                                <span class="badge bg-secondary">No Classes</span>
+                            {% elif s.is_defaulter %}
                                 <span class="badge-defaulter"><i class="fa-solid fa-triangle-exclamation me-1"></i>Defaulter</span>
                             {% else %}
                                 <span class="badge-eligible"><i class="fa-solid fa-check me-1"></i>Eligible</span>

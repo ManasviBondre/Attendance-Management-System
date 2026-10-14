@@ -1,0 +1,147 @@
+{% extends 'base.html' %}
+
+{% block title %}Assigned Students - Attendance Management System{% endblock %}
+
+{% block content %}
+<div class="page-header d-flex justify-content-between align-items-center flex-wrap gap-2">
+    <div>
+        <h1><i class="fa-solid fa-users text-primary me-2"></i>Assigned Student Lists</h1>
+        <p>View enrolled students and attendance eligibility for your assigned subjects</p>
+    </div>
+    <div class="d-flex gap-2">
+        <a href="{{ url_for('faculty_mark_attendance', subject_id=selected_subject_id) }}" class="btn btn-primary">
+            <i class="fa-solid fa-clipboard-check me-1"></i> Mark Attendance
+        </a>
+        <a href="{{ url_for('export_subject_csv', subject_id=selected_subject_id) }}" class="btn btn-outline-success">
+            <i class="fa-solid fa-file-arrow-down me-1"></i> Export Register (CSV)
+        </a>
+    </div>
+</div>
+
+<!-- Subject Selector & Search Toolbar -->
+<div class="card mb-4">
+    <div class="card-body">
+        <form method="GET" action="{{ url_for('faculty_students') }}" class="row g-3 align-items-center">
+            <div class="col-md-5">
+                <label class="form-label fw-semibold small text-muted">Select Assigned Subject</label>
+                <select name="subject_id" class="form-select" onchange="this.form.submit()">
+                    {% for subj in assigned_subjects %}
+                        <option value="{{ subj.id }}" {% if selected_subject_id == subj.id %}selected{% endif %}>
+                            {{ subj.code }} - {{ subj.name }} ({{ subj.student_count }} Students)
+                        </option>
+                    {% endfor %}
+                </select>
+            </div>
+            <div class="col-md-7">
+                <label class="form-label fw-semibold small text-muted">Filter Students</label>
+                <div class="input-group">
+                    <span class="input-group-text bg-white"><i class="fa-solid fa-magnifying-glass"></i></span>
+                    <input type="text" 
+                           class="form-control table-search-input" 
+                           data-table="facultyStudentRosterTable" 
+                           placeholder="Filter student by roll number, name, or status (Eligible/Defaulter)...">
+                </div>
+            </div>
+        </form>
+    </div>
+</div>
+
+<!-- Subject Overview Summary Strip -->
+<div class="row g-3 mb-4">
+    <div class="col-sm-6 col-md-3">
+        <div class="stat-card stat-info h-100">
+            <div class="stat-value text-primary">{{ students|length }}</div>
+            <div class="stat-label">Enrolled Students</div>
+            <div class="text-muted small mt-1"><i class="fa-solid fa-users me-1"></i>Class Roster</div>
+        </div>
+    </div>
+    <div class="col-sm-6 col-md-3">
+        <div class="stat-card stat-info h-100">
+            <div class="stat-value text-secondary">{{ total_conducted }}</div>
+            <div class="stat-label">Lectures Held</div>
+            <div class="text-muted small mt-1"><i class="fa-solid fa-chalkboard-user me-1"></i>Sessions to Date</div>
+        </div>
+    </div>
+    <div class="col-sm-6 col-md-3">
+        <div class="stat-card stat-success h-100">
+            <div class="stat-value text-success">{{ selected_subject.credits }}</div>
+            <div class="stat-label">Course Credits</div>
+            <div class="text-muted small mt-1"><i class="fa-solid fa-graduation-cap me-1"></i>Curriculum Value</div>
+        </div>
+    </div>
+    <div class="col-sm-6 col-md-3">
+        <div class="stat-card stat-info h-100">
+            <div class="stat-value text-dark">{{ attendance_threshold }}%</div>
+            <div class="stat-label">Statutory Minimum</div>
+            <div class="text-muted small mt-1"><i class="fa-solid fa-scale-balanced me-1"></i>Threshold</div>
+        </div>
+    </div>
+</div>
+
+<!-- Student Roster Table -->
+<div class="card">
+    <div class="card-header bg-white d-flex justify-content-between align-items-center py-3">
+        <span class="fw-bold">
+            <i class="fa-solid fa-id-card text-primary me-2"></i>
+            Enrolled Student Roster for {{ selected_subject.name }} ({{ selected_subject.code }}) — {{ students|length }} Students
+        </span>
+        <span class="badge bg-light text-dark border">Semester {{ selected_subject.semester }}</span>
+    </div>
+    <div class="table-responsive">
+        <table class="table table-custom table-hover align-middle mb-0" id="facultyStudentRosterTable">
+            <thead>
+                <tr>
+                    <th style="width: 60px;">#</th>
+                    <th style="width: 140px;">Roll Number</th>
+                    <th>Student Full Name</th>
+                    <th>Email Address</th>
+                    <th class="text-center" style="width: 130px;">Lectures Held</th>
+                    <th class="text-center" style="width: 120px;">Attended</th>
+                    <th class="text-center" style="width: 120px;">Missed</th>
+                    <th class="text-center" style="width: 160px;">Attendance %</th>
+                    <th class="text-center" style="width: 140px;">Status</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% if students %}
+                    {% for s in students %}
+                        <tr class="{% if s.is_defaulter %}table-danger-subtle{% endif %}">
+                            <td class="text-muted">{{ loop.index }}</td>
+                            <td>
+                                <span class="badge bg-light text-dark border fs-6 fw-bold">{{ s.roll_number }}</span>
+                            </td>
+                            <td>
+                                <div class="fw-bold text-dark">{{ s.full_name }}</div>
+                            </td>
+                            <td><small class="text-muted">{{ s.email }}</small></td>
+                            <td class="text-center fw-bold">{{ s.total_conducted }}</td>
+                            <td class="text-center text-success fw-bold">{{ s.attended }}</td>
+                            <td class="text-center text-danger fw-bold">{{ s.missed }}</td>
+                            <td class="text-center">
+                                <span class="fw-bold {% if s.percentage and s.percentage >= 75 %}text-success{% elif s.percentage is not none %}text-danger{% else %}text-muted{% endif %}">
+                                    {{ s.percentage_display }}
+                                </span>
+                            </td>
+                            <td class="text-center">
+                                {% if s.total_conducted == 0 %}
+                                    <span class="badge bg-secondary">No Classes</span>
+                                {% elif s.is_defaulter %}
+                                    <span class="badge-defaulter"><i class="fa-solid fa-triangle-exclamation me-1"></i>Defaulter</span>
+                                {% else %}
+                                    <span class="badge-eligible"><i class="fa-solid fa-check me-1"></i>Eligible</span>
+                                {% endif %}
+                            </td>
+                        </tr>
+                    {% endfor %}
+                {% else %}
+                    <tr>
+                        <td colspan="9" class="text-center py-4 text-muted">
+                            No students enrolled in this subject.
+                        </td>
+                    </tr>
+                {% endif %}
+            </tbody>
+        </table>
+    </div>
+</div>
+{% endblock %}

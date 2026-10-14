@@ -22,8 +22,22 @@
     </div>
 </div>
 
-<!-- Statutory Warning or Good Standing Banner -->
-{% if data.is_defaulter %}
+<!-- Statutory Warning, Good Standing, or Zero Data Banner -->
+{% if data.overall_conducted == 0 %}
+    <div class="card p-3 mb-4 bg-light border-info shadow-sm">
+        <div class="d-flex align-items-center gap-3">
+            <div class="fs-2 text-info">
+                <i class="fa-solid fa-circle-info"></i>
+            </div>
+            <div>
+                <h5 class="fw-bold text-dark mb-0">No Classes Conducted Yet</h5>
+                <p class="mb-0 text-muted small">
+                    Attendance records have not been recorded yet for your enrolled semester subjects.
+                </p>
+            </div>
+        </div>
+    </div>
+{% elif data.is_defaulter %}
     <div class="defaulter-alert-box shadow-sm">
         <div class="d-flex align-items-start gap-3">
             <div class="fs-2 text-danger">
@@ -31,10 +45,10 @@
             </div>
             <div>
                 <h5 class="fw-bold text-danger mb-1">
-                    Statutory Attendance Warning: Shortage Detected ({{ data.overall_pct }}% &lt; {{ data.threshold }}%)
+                    Statutory Attendance Warning: Shortage Detected ({{ data.overall_pct_display }} &lt; {{ data.threshold }}%)
                 </h5>
                 <p class="mb-1 text-dark">
-                    Your cumulative attendance across current semester subjects is currently <strong>{{ data.overall_pct }}%</strong>, 
+                    Your cumulative attendance across current semester subjects is currently <strong>{{ data.overall_pct_display }}</strong>, 
                     which is below the statutory requirement of <strong>{{ data.threshold }}%</strong>. 
                     As per university academic regulations, students with attendance below {{ data.threshold }}% are liable to be debarred from appearing in semester end examinations.
                 </p>
@@ -52,7 +66,7 @@
             </div>
             <div>
                 <h5 class="fw-bold text-success mb-0">
-                    Good Standing: Overall Attendance {{ data.overall_pct }}%
+                    Good Standing: Overall Attendance {{ data.overall_pct_display }}
                 </h5>
                 <p class="mb-0 text-dark small">
                     You meet the statutory minimum threshold of {{ data.threshold }}%. Maintain regular class attendance to stay eligible for exams.
@@ -65,11 +79,11 @@
 <!-- Top Stats Overview -->
 <div class="row g-3 mb-4">
     <div class="col-sm-6 col-md-3">
-        <div class="stat-card {% if data.overall_pct >= 75 %}stat-success{% else %}stat-danger{% endif %} h-100">
-            <div class="stat-value {% if data.overall_pct >= 75 %}text-success{% else %}text-danger{% endif %}">{{ data.overall_pct }}%</div>
+        <div class="stat-card {% if data.overall_pct and data.overall_pct >= 75 %}stat-success{% elif data.overall_pct is not none %}stat-danger{% else %}stat-info{% endif %} h-100">
+            <div class="stat-value {% if data.overall_pct and data.overall_pct >= 75 %}text-success{% elif data.overall_pct is not none %}text-danger{% else %}text-muted{% endif %}">{{ data.overall_pct_display }}</div>
             <div class="stat-label">Cumulative Attendance</div>
             <div class="attendance-progress mt-2">
-                <div class="attendance-progress-bar {% if data.overall_pct >= 75 %}progress-safe{% else %}progress-danger{% endif %}" style="width: {{ data.overall_pct }}%;"></div>
+                <div class="attendance-progress-bar {% if data.overall_pct and data.overall_pct >= 75 %}progress-safe{% else %}progress-danger{% endif %}" style="width: {{ data.overall_pct or 0 }}%;"></div>
             </div>
         </div>
     </div>
@@ -104,7 +118,9 @@
             <div class="card h-100 {% if subj.is_defaulter %}border-danger border-2{% endif %}">
                 <div class="card-header d-flex justify-content-between align-items-center bg-white">
                     <span class="badge bg-primary text-white">{{ subj.subject_code }}</span>
-                    {% if subj.is_defaulter %}
+                    {% if subj.conducted == 0 %}
+                        <span class="badge bg-secondary">No Classes</span>
+                    {% elif subj.is_defaulter %}
                         <span class="badge-defaulter"><i class="fa-solid fa-triangle-exclamation me-1"></i>Shortage</span>
                     {% else %}
                         <span class="badge-eligible"><i class="fa-solid fa-check me-1"></i>Eligible</span>
@@ -118,13 +134,13 @@
 
                     <div class="d-flex justify-content-between align-items-end mb-1">
                         <span class="text-muted small">Attendance Rate</span>
-                        <span class="fs-4 fw-bold {% if subj.percentage >= 75 %}text-success{% else %}text-danger{% endif %}">
-                            {{ subj.percentage }}%
+                        <span class="fs-4 fw-bold {% if subj.conducted == 0 %}text-secondary{% elif subj.percentage and subj.percentage >= 75 %}text-success{% else %}text-danger{% endif %}">
+                            {{ subj.percentage_display }}
                         </span>
                     </div>
 
                     <div class="attendance-progress mb-3">
-                        <div class="attendance-progress-bar {% if subj.percentage >= 75 %}progress-safe{% else %}progress-danger{% endif %}" style="width: {{ subj.percentage }}%;"></div>
+                        <div class="attendance-progress-bar {% if subj.percentage and subj.percentage >= 75 %}progress-safe{% else %}progress-danger{% endif %}" style="width: {{ subj.percentage or 0 }}%;"></div>
                     </div>
 
                     <div class="row text-center border rounded py-2 mb-3 bg-light g-0">

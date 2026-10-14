@@ -9,10 +9,7 @@ def get_db():
     """Opens a new database connection if there is none yet for the current application context, or returns a standalone connection."""
     if has_app_context():
         if 'db' not in g:
-            g.db = sqlite3.connect(
-                Config.DATABASE,
-                detect_types=sqlite3.PARSE_DECLTYPES
-            )
+            g.db = sqlite3.connect(Config.DATABASE)
             g.db.row_factory = sqlite3.Row
             g.db.execute("PRAGMA foreign_keys = ON;")
         return g.db
@@ -20,10 +17,7 @@ def get_db():
 
 def get_standalone_db():
     """Provides a standalone database connection for initial setup and seed scripts."""
-    conn = sqlite3.connect(
-        Config.DATABASE,
-        detect_types=sqlite3.PARSE_DECLTYPES
-    )
+    conn = sqlite3.connect(Config.DATABASE)
     conn.row_factory = sqlite3.Row
     conn.execute("PRAGMA foreign_keys = ON;")
     return conn
@@ -216,15 +210,15 @@ def seed_database_if_empty():
 
     # 4. Create 45 Realistic Student Records (exceeding requirement of >= 40)
     student_names = [
-        "Aarav Sharma", "Aditi Rao", "Rohan Gupta", "Priya Nair", "Kavya Deshmukh",
-        "Siddharth Verma", "Ananya Joshi", "Rahul Mehta", "Sneha Kulkarni", "Vikram Rathore",
-        "Pooja Hegde", "Arjun Reddy", "Isha Patel", "Karan Malhotra", "Tanvi Bhat",
-        "Rishi Saxena", "Divya Menon", "Harsh Vardhan", "Riya Sen", "Manish Pandey",
-        "Meera Nambiar", "Gaurav Choudhary", "Shreya Ghoshal", "Nikhil Chopra", "Anushka Das",
-        "Varun Dhawan", "Neha Singhania", "Akash Deep", "Swati Mishra", "Kunal Kamra",
-        "Deepika Padukone", "Ranbir Kapoor", "Kriti Sanon", "Ayushmann Khurrana", "Bhumi Pednekar",
-        "Kartik Aaryan", "Shraddha Kapoor", "Vicky Kaushal", "Taapsee Pannu", "Rajkummar Rao",
-        "Sanya Malhotra", "Ishaan Khatter", "Alia Bhatt", "Abhishek Bachchan", "Fatima Sana"
+        "Aarav Sharma", "Priya Patil", "Rohan Deshmukh", "Sneha Kulkarni", "Aditya Joshi",
+        "Ananya More", "Rahul Jadhav", "Pooja Shinde", "Omkar Pawar", "Neha Chavan",
+        "Tanvi Kulkarni", "Vikram Shinde", "Isha Deshmukh", "Karan Joshi", "Aditi Patil",
+        "Rishi Sharma", "Divya Pawar", "Harsh Jadhav", "Riya More", "Manish Chavan",
+        "Meera Joshi", "Gaurav Kulkarni", "Shreya Shinde", "Nikhil Deshmukh", "Anushka Patil",
+        "Varun Sharma", "Neha Pawar", "Akash Jadhav", "Swati More", "Kunal Chavan",
+        "Pranav Kulkarni", "Gayatri Shinde", "Rohit Deshmukh", "Shruti Joshi", "Mayur Patil",
+        "Pallavi Sharma", "Saurabh Pawar", "Ketaki Jadhav", "Tejas More", "Rutuja Chavan",
+        "Swapnil Kulkarni", "Komal Shinde", "Sanket Deshmukh", "Sayali Joshi", "Chinmay Patil"
     ]
 
     student_db_ids = []

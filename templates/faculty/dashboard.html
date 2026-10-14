@@ -51,11 +51,14 @@
                                 <i class="fa-solid fa-clipboard-check me-1"></i> Take Attendance
                             </a>
                             <div class="btn-group">
+                                <a href="{{ url_for('faculty_students', subject_id=subj.id) }}" class="btn btn-outline-primary btn-sm">
+                                    <i class="fa-solid fa-users me-1"></i> Students
+                                </a>
                                 <a href="{{ url_for('faculty_subject_stats', subject_id=subj.id) }}" class="btn btn-outline-info btn-sm">
-                                    <i class="fa-solid fa-chart-line me-1"></i> Student Stats
+                                    <i class="fa-solid fa-chart-line me-1"></i> Stats
                                 </a>
                                 <a href="{{ url_for('faculty_session_history', subject_id=subj.id) }}" class="btn btn-outline-secondary btn-sm">
-                                    <i class="fa-solid fa-history me-1"></i> Past Sessions
+                                    <i class="fa-solid fa-history me-1"></i> Sessions
                                 </a>
                                 <a href="{{ url_for('export_subject_csv', subject_id=subj.id) }}" class="btn btn-outline-success btn-sm" title="Export CSV">
                                     <i class="fa-solid fa-file-csv"></i>

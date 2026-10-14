@@ -12,6 +12,8 @@ import models
 
 app = Flask(__name__)
 app.config.from_object(Config)
+app.config['SESSION_COOKIE_HTTPONLY'] = True
+app.config['SESSION_COOKIE_SAMESITE'] = 'Lax'
 
 # Register database teardown
 app.teardown_appcontext(database.close_db)
@@ -169,7 +171,11 @@ def register():
         # Role specific security and fields
         if role == 'admin':
             admin_key = request.form.get('admin_key', '').strip()
-            if admin_key != Config.ADMIN_REGISTRATION_KEY:
+            if not admin_key:
+                flash("Administrator Security Key is required for administrator registration.", "danger")
+                return render_template('auth/register.html', subjects=subjects)
+            expected_key = app.config.get('ADMIN_REGISTRATION_KEY') or Config.ADMIN_REGISTRATION_KEY
+            if admin_key != expected_key:
                 flash("Invalid Administrator Security Key. Authorization failed.", "danger")
                 return render_template('auth/register.html', subjects=subjects)
 
@@ -457,7 +463,7 @@ def export_defaulters_csv():
         ])
     response = make_response(si.getvalue())
     response.headers['Content-Disposition'] = f"attachment; filename=ams_defaulters_list_{date.today().strftime('%Y%m%d')}.csv"
-    response.headers['Content-type'] = 'text/csv'
+    response.headers['Content-Type'] = 'text/csv; charset=utf-8'
     return response
 
 # ==========================================
@@ -633,6 +639,31 @@ def faculty_subject_stats(subject_id):
         avg_pct=avg_pct
     )
 
+@app.route('/faculty/students')
+@role_required('faculty')
+def faculty_students():
+    faculty_user_id = session.get('user_id')
+    assigned_subjects = models.get_faculty_assigned_subjects(faculty_user_id)
+    if not assigned_subjects:
+        flash("You are not currently assigned to any subjects. Please contact the administrator.", "warning")
+        return redirect(url_for('faculty_dashboard'))
+
+    subject_id = request.args.get('subject_id', type=int)
+    if not subject_id or not any(s['id'] == subject_id for s in assigned_subjects):
+        subject_id = assigned_subjects[0]['id']
+
+    selected_subject = next((s for s in assigned_subjects if s['id'] == subject_id), assigned_subjects[0])
+    total_conducted, student_rows = models.get_subject_student_attendance_summary(subject_id)
+
+    return render_template(
+        'faculty/student_list.html',
+        assigned_subjects=assigned_subjects,
+        selected_subject=selected_subject,
+        selected_subject_id=subject_id,
+        total_conducted=total_conducted,
+        students=student_rows
+    )
+
 @app.route('/faculty/reports/export/<int:subject_id>')
 @role_required('faculty', 'admin')
 def export_subject_csv(subject_id):
@@ -665,7 +696,7 @@ def export_subject_csv(subject_id):
 
     response = make_response(si.getvalue())
     response.headers['Content-Disposition'] = f"attachment; filename=ams_{subject['code']}_attendance.csv"
-    response.headers['Content-type'] = 'text/csv'
+    response.headers['Content-Type'] = 'text/csv; charset=utf-8'
     return response
 
 # ==========================================
@@ -736,10 +767,6 @@ def user_profile():
     user = models.get_user_by_id(session['user_id'])
     return render_template('common/profile.html', user=user)
 
-@app.route('/sepm-docs')
-def sepm_docs():
-    """Renders the comprehensive SEPM Project Report directly within the web app."""
-    return render_template('common/sepm_docs.html')
 
 # ==========================================
 # ERROR HANDLERS

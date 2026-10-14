@@ -65,6 +65,11 @@
                             </a>
                         </li>
                         <li class="nav-item">
+                            <a class="nav-link {% if request.endpoint == 'faculty_students' %}active{% endif %}" href="{{ url_for('faculty_students') }}">
+                                <i class="fa-solid fa-users me-1"></i> Student Lists
+                            </a>
+                        </li>
+                        <li class="nav-item">
                             <a class="nav-link {% if request.endpoint == 'faculty_session_history' %}active{% endif %}" href="{{ url_for('faculty_session_history') }}">
                                 <i class="fa-solid fa-clock-rotate-left me-1"></i> Past Sessions
                             </a>
@@ -81,13 +86,6 @@
                             </a>
                         </li>
                     {% endif %}
-
-                    <!-- SEPM Project Report Link (Always visible for examiner / viva evaluation) -->
-                    <li class="nav-item">
-                        <a class="nav-link {% if request.endpoint == 'sepm_docs' %}active{% endif %} text-warning" href="{{ url_for('sepm_docs') }}">
-                            <i class="fa-solid fa-file-contract me-1"></i> SEPM Report & Viva Guide
-                        </a>
-                    </li>
                 </ul>
 
                 <ul class="navbar-nav ms-auto align-items-center">
@@ -169,14 +167,11 @@
         <div class="container">
             <div class="row">
                 <div class="col-md-6 text-md-start mb-2 mb-md-0">
-                    <span class="fw-semibold">Attendance Management System (AMS)</span> — SEPM Mini-Project
-                    <div class="text-muted small">Department of Computer Science & Engineering</div>
+                    <span class="fw-semibold">Attendance Management System</span>
+                    <div class="text-muted small">&copy; 2026 Attendance Management System. All rights reserved.</div>
                 </div>
                 <div class="col-md-6 text-md-end">
-                    <a href="{{ url_for('sepm_docs') }}" class="text-decoration-none text-primary me-3">
-                        <i class="fa-solid fa-book-open me-1"></i> Project Documentation
-                    </a>
-                    <span class="text-muted">Statutory Minimum: {{ attendance_threshold }}%</span>
+                    <span class="badge bg-light text-muted border">Statutory Minimum Attendance: {{ attendance_threshold }}%</span>
                 </div>
             </div>
         </div>

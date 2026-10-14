@@ -81,7 +81,12 @@ def get_admin_dashboard_stats():
     cursor.execute("SELECT COUNT(*) FROM attendance_records WHERE status = 'Present'")
     total_present = cursor.fetchone()[0]
 
-    overall_pct = round((total_present / total_records * 100), 1) if total_records > 0 else 0.0
+    if total_records > 0:
+        overall_pct = round((total_present / total_records * 100), 1)
+        overall_pct_display = f"{overall_pct}%"
+    else:
+        overall_pct = None
+        overall_pct_display = "N/A"
 
     # Count defaulter students (< 75% overall)
     cursor.execute("""
@@ -97,7 +102,7 @@ def get_admin_dashboard_stats():
         cond = row['total_conducted'] or 0
         pres = row['total_present'] or 0
         pct = (pres / cond * 100) if cond > 0 else 100.0
-        if pct < Config.ATTENDANCE_THRESHOLD:
+        if cond > 0 and pct < Config.ATTENDANCE_THRESHOLD:
             defaulter_count += 1
 
     return {
@@ -107,6 +112,7 @@ def get_admin_dashboard_stats():
         'total_sessions': total_sessions,
         'total_records': total_records,
         'overall_pct': overall_pct,
+        'overall_pct_display': overall_pct_display,
         'defaulter_count': defaulter_count
     }
 
@@ -153,6 +159,9 @@ def create_user_with_role(username, email, password, role, full_name, phone=None
     db = get_db()
     cursor = db.cursor()
     extra_data = extra_data or {}
+    role = (role or '').strip().lower()
+    if role not in ('admin', 'faculty', 'student'):
+        return None, "Invalid user role specified."
 
     # Check unique username and email
     cursor.execute("SELECT id FROM users WHERE LOWER(username) = LOWER(?)", (username.strip(),))
@@ -342,13 +351,16 @@ def get_all_subjects():
     cursor = db.cursor()
     cursor.execute("""
         SELECT s.id, s.code, s.name, s.department, s.semester, s.credits,
-               f.id as faculty_id, f.faculty_id as faculty_code, u.full_name as faculty_name,
+               f.id as faculty_id,
+               GROUP_CONCAT(DISTINCT f.faculty_id) as faculty_code,
+               GROUP_CONCAT(DISTINCT u.full_name) as faculty_name,
                (SELECT COUNT(*) FROM student_subjects ss WHERE ss.subject_id = s.id) as enrolled_students,
                (SELECT COUNT(*) FROM attendance_sessions ses WHERE ses.subject_id = s.id) as total_sessions
         FROM subjects s
         LEFT JOIN faculty_subjects fs ON s.id = fs.subject_id
         LEFT JOIN faculty f ON fs.faculty_id = f.id
         LEFT JOIN users u ON f.user_id = u.id
+        GROUP BY s.id
         ORDER BY s.code ASC
     """)
     return [dict(row) for row in cursor.fetchall()]
@@ -659,12 +671,20 @@ def get_subject_student_attendance_summary(subject_id):
         conducted = total_conducted
         attended = d['attended'] or 0
         missed = conducted - attended
-        pct = round((attended / conducted * 100), 1) if conducted > 0 else 100.0
+        if conducted > 0:
+            pct = round((attended / conducted * 100), 1)
+            is_defaulter = pct < Config.ATTENDANCE_THRESHOLD
+            pct_display = f"{pct}%"
+        else:
+            pct = None
+            is_defaulter = False
+            pct_display = "N/A"
         d['total_conducted'] = conducted
         d['attended'] = attended
         d['missed'] = missed
         d['percentage'] = pct
-        d['is_defaulter'] = pct < Config.ATTENDANCE_THRESHOLD
+        d['percentage_display'] = pct_display
+        d['is_defaulter'] = is_defaulter
         rows.append(d)
 
     return total_conducted, rows
@@ -720,8 +740,14 @@ def get_student_dashboard_data(student_user_id):
         conducted = r['total_conducted'] or 0
         attended = r['attended'] or 0
         missed = conducted - attended
-        pct = round((attended / conducted * 100), 1) if conducted > 0 else 100.0
-        is_defaulter = pct < Config.ATTENDANCE_THRESHOLD
+        if conducted > 0:
+            pct = round((attended / conducted * 100), 1)
+            is_defaulter = pct < Config.ATTENDANCE_THRESHOLD
+            pct_display = f"{pct}%"
+        else:
+            pct = None
+            is_defaulter = False
+            pct_display = "N/A"
 
         total_all_conducted += conducted
         total_all_attended += attended
@@ -755,6 +781,7 @@ def get_student_dashboard_data(student_user_id):
             'attended': attended,
             'missed': missed,
             'percentage': pct,
+            'percentage_display': pct_display,
             'is_defaulter': is_defaulter,
             'advice': advice
         })
@@ -762,8 +789,14 @@ def get_student_dashboard_data(student_user_id):
     overall_conducted = total_all_conducted
     overall_attended = total_all_attended
     overall_missed = overall_conducted - overall_attended
-    overall_pct = round((overall_attended / overall_conducted * 100), 1) if overall_conducted > 0 else 100.0
-    overall_defaulter = overall_pct < Config.ATTENDANCE_THRESHOLD
+    if overall_conducted > 0:
+        overall_pct = round((overall_attended / overall_conducted * 100), 1)
+        overall_defaulter = overall_pct < Config.ATTENDANCE_THRESHOLD
+        overall_pct_display = f"{overall_pct}%"
+    else:
+        overall_pct = None
+        overall_defaulter = False
+        overall_pct_display = "N/A"
 
     return {
         'student': dict(student),
@@ -771,6 +804,7 @@ def get_student_dashboard_data(student_user_id):
         'overall_attended': overall_attended,
         'overall_missed': overall_missed,
         'overall_pct': overall_pct,
+        'overall_pct_display': overall_pct_display,
         'is_defaulter': overall_defaulter,
         'threshold': Config.ATTENDANCE_THRESHOLD,
         'subjects': subjects_summary

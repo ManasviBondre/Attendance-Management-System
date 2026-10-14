@@ -52,8 +52,8 @@
         </div>
     </div>
     <div class="col-sm-6 col-xl-2">
-        <div class="stat-card {% if stats.overall_pct >= 75 %}stat-success{% else %}stat-danger{% endif %} h-100">
-            <div class="stat-value {% if stats.overall_pct >= 75 %}text-success{% else %}text-danger{% endif %}">{{ stats.overall_pct }}%</div>
+        <div class="stat-card {% if stats.overall_pct and stats.overall_pct >= 75 %}stat-success{% elif stats.overall_pct is not none %}stat-danger{% else %}stat-info{% endif %} h-100">
+            <div class="stat-value {% if stats.overall_pct and stats.overall_pct >= 75 %}text-success{% elif stats.overall_pct is not none %}text-danger{% else %}text-muted{% endif %}">{{ stats.overall_pct_display }}</div>
             <div class="stat-label">System Attendance</div>
             <div class="text-muted small mt-1"><i class="fa-solid fa-chart-line me-1"></i>Average</div>
         </div>
