@@ -1,0 +1,78 @@
+{% extends 'base.html' %}
+
+{% block title %}{% if mode == 'create' %}Add New Subject{% else %}Edit Subject - {{ subject.name }}{% endif %} | AMS{% endblock %}
+
+{% block content %}
+<div class="row justify-content-center">
+    <div class="col-lg-7 col-xl-6">
+        <div class="card shadow-sm">
+            <div class="card-header bg-white py-3">
+                <div class="d-flex justify-content-between align-items-center">
+                    <h5 class="mb-0 fw-bold text-primary">
+                        <i class="fa-solid {% if mode == 'create' %}fa-plus{% else %}fa-pen-to-square{% endif %} me-2"></i>
+                        {% if mode == 'create' %}Add New Subject{% else %}Edit Subject: {{ subject.name }}{% endif %}
+                    </h5>
+                    <a href="{{ url_for('admin_subjects') }}" class="btn btn-sm btn-outline-secondary">
+                        <i class="fa-solid fa-arrow-left me-1"></i> Back to Subjects
+                    </a>
+                </div>
+            </div>
+
+            <div class="card-body p-4">
+                <form method="POST">
+                    <div class="row">
+                        <div class="col-md-5 mb-3">
+                            <label for="code" class="form-label fw-semibold">Subject Code <span class="text-danger">*</span></label>
+                            <input type="text" class="form-control text-uppercase" id="code" name="code" value="{{ subject.code if subject else '' }}" placeholder="e.g. CS606" required>
+                        </div>
+                        <div class="col-md-7 mb-3">
+                            <label for="name" class="form-label fw-semibold">Subject Title <span class="text-danger">*</span></label>
+                            <input type="text" class="form-control" id="name" name="name" value="{{ subject.name if subject else '' }}" placeholder="e.g. Cloud Computing" required>
+                        </div>
+                    </div>
+
+                    <div class="mb-3">
+                        <label for="department" class="form-label fw-semibold">Academic Department</label>
+                        <input type="text" class="form-control" id="department" name="department" value="{{ subject.department if subject else 'Computer Science & Engineering' }}">
+                    </div>
+
+                    <div class="row">
+                        <div class="col-md-6 mb-3">
+                            <label for="semester" class="form-label fw-semibold">Semester</label>
+                            <select class="form-select" id="semester" name="semester">
+                                {% for s in range(1, 9) %}
+                                    <option value="{{ s }}" {% if subject and subject.semester == s or (not subject and s == 6) %}selected{% endif %}>Semester {{ s }}</option>
+                                {% endfor %}
+                            </select>
+                        </div>
+                        <div class="col-md-6 mb-3">
+                            <label for="credits" class="form-label fw-semibold">Credits</label>
+                            <input type="number" class="form-control" id="credits" name="credits" min="1" max="10" value="{{ subject.credits if subject else 4 }}">
+                        </div>
+                    </div>
+
+                    <div class="mb-4">
+                        <label for="faculty_id" class="form-label fw-semibold">Assign Primary Faculty</label>
+                        <select class="form-select" id="faculty_id" name="faculty_id">
+                            <option value="">-- No Faculty Assigned --</option>
+                            {% for fac in faculty_list %}
+                                <option value="{{ fac.id }}" {% if subject and subject.faculty_id == fac.id %}selected{% endif %}>
+                                    {{ fac.full_name }} ({{ fac.faculty_id }}) - {{ fac.designation }}
+                                </option>
+                            {% endfor %}
+                        </select>
+                        <div class="form-text">Assigned faculty member will be authorized to take and edit attendance for this subject.</div>
+                    </div>
+
+                    <div class="d-flex justify-content-end gap-2 pt-3 border-top">
+                        <a href="{{ url_for('admin_subjects') }}" class="btn btn-outline-secondary">Cancel</a>
+                        <button type="submit" class="btn btn-primary fw-semibold px-4">
+                            <i class="fa-solid fa-floppy-disk me-1"></i> {% if mode == 'create' %}Create Subject{% else %}Save Changes{% endif %}
+                        </button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

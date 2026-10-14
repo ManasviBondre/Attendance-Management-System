@@ -1,0 +1,99 @@
+{% extends 'base.html' %}
+
+{% block title %}My Profile - Attendance Management System{% endblock %}
+
+{% block content %}
+<div class="page-header">
+    <h1><i class="fa-solid fa-id-card text-primary me-2"></i>User Profile</h1>
+    <p>View your account information and academic credentials</p>
+</div>
+
+<div class="row justify-content-center">
+    <div class="col-lg-8">
+        <div class="card shadow-sm mb-4">
+            <div class="card-header bg-white py-3 d-flex justify-content-between align-items-center">
+                <span class="fw-bold text-primary"><i class="fa-solid fa-user me-2"></i>Account Details</span>
+                <span class="badge bg-primary text-uppercase">{{ user.role }}</span>
+            </div>
+            <div class="card-body p-4">
+                <div class="d-flex align-items-center gap-3 mb-4 pb-3 border-bottom">
+                    <div class="bg-primary text-white rounded-circle d-flex align-items-center justify-content-center" style="width: 64px; height: 64px; font-size: 1.75rem;">
+                        <i class="fa-solid fa-user"></i>
+                    </div>
+                    <div>
+                        <h4 class="fw-bold mb-1">{{ user.full_name }}</h4>
+                        <div class="text-muted">@{{ user.username }} &bull; {{ user.email }}</div>
+                    </div>
+                </div>
+
+                <div class="row g-3">
+                    <div class="col-md-6">
+                        <label class="form-label text-muted small text-uppercase fw-semibold">Role</label>
+                        <div class="form-control bg-light fw-bold text-capitalize">{{ user.role }}</div>
+                    </div>
+                    <div class="col-md-6">
+                        <label class="form-label text-muted small text-uppercase fw-semibold">Phone Number</label>
+                        <div class="form-control bg-light">{{ user.phone or 'Not provided' }}</div>
+                    </div>
+
+                    {% if user.role == 'student' and user.student_details %}
+                        <div class="col-md-6">
+                            <label class="form-label text-muted small text-uppercase fw-semibold">University Roll Number</label>
+                            <div class="form-control bg-light fw-bold text-primary">{{ user.student_details.roll_number }}</div>
+                        </div>
+                        <div class="col-md-6">
+                            <label class="form-label text-muted small text-uppercase fw-semibold">Department</label>
+                            <div class="form-control bg-light">{{ user.student_details.department }}</div>
+                        </div>
+                        <div class="col-md-4">
+                            <label class="form-label text-muted small text-uppercase fw-semibold">Semester</label>
+                            <div class="form-control bg-light">Semester {{ user.student_details.semester }}</div>
+                        </div>
+                        <div class="col-md-4">
+                            <label class="form-label text-muted small text-uppercase fw-semibold">Section</label>
+                            <div class="form-control bg-light">Section {{ user.student_details.section }}</div>
+                        </div>
+                        <div class="col-md-4">
+                            <label class="form-label text-muted small text-uppercase fw-semibold">Academic Batch</label>
+                            <div class="form-control bg-light">{{ user.student_details.batch_year }}</div>
+                        </div>
+                    {% elif user.role == 'faculty' and user.faculty_details %}
+                        <div class="col-md-6">
+                            <label class="form-label text-muted small text-uppercase fw-semibold">Faculty Employee ID</label>
+                            <div class="form-control bg-light fw-bold text-primary">{{ user.faculty_details.faculty_id }}</div>
+                        </div>
+                        <div class="col-md-6">
+                            <label class="form-label text-muted small text-uppercase fw-semibold">Designation</label>
+                            <div class="form-control bg-light">{{ user.faculty_details.designation }}</div>
+                        </div>
+                        <div class="col-md-12">
+                            <label class="form-label text-muted small text-uppercase fw-semibold">Department</label>
+                            <div class="form-control bg-light">{{ user.faculty_details.department }}</div>
+                        </div>
+                    {% endif %}
+
+                    <div class="col-md-6">
+                        <label class="form-label text-muted small text-uppercase fw-semibold">Account Status</label>
+                        <div class="form-control bg-light">
+                            {% if user.is_active %}
+                                <span class="badge bg-success">Active & Enabled</span>
+                            {% else %}
+                                <span class="badge bg-secondary">Inactive</span>
+                            {% endif %}
+                        </div>
+                    </div>
+                    <div class="col-md-6">
+                        <label class="form-label text-muted small text-uppercase fw-semibold">Registered Since</label>
+                        <div class="form-control bg-light">{{ user.created_at }}</div>
+                    </div>
+                </div>
+            </div>
+            <div class="card-footer bg-light text-end p-3">
+                <a href="{{ url_for('index') }}" class="btn btn-outline-secondary">
+                    <i class="fa-solid fa-arrow-left me-1"></i> Return to Dashboard
+                </a>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

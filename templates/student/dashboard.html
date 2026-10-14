@@ -1,0 +1,211 @@
+{% extends 'base.html' %}
+
+{% block title %}Student Dashboard - Attendance Management System{% endblock %}
+
+{% block content %}
+<div class="page-header d-flex justify-content-between align-items-center flex-wrap gap-2">
+    <div>
+        <h1>
+            <i class="fa-solid fa-user-graduate text-primary me-2"></i>
+            Welcome, {{ data.student.full_name }}!
+        </h1>
+        <p>
+            Roll Number: <span class="badge bg-dark fs-6">{{ data.student.roll_number }}</span> &bull; 
+            Department: {{ data.student.department }} &bull; 
+            Semester {{ data.student.semester }} (Section {{ data.student.section }})
+        </p>
+    </div>
+    <div>
+        <a href="{{ url_for('student_history') }}" class="btn btn-primary">
+            <i class="fa-solid fa-list-check me-1"></i> Full Attendance History
+        </a>
+    </div>
+</div>
+
+<!-- Statutory Warning or Good Standing Banner -->
+{% if data.is_defaulter %}
+    <div class="defaulter-alert-box shadow-sm">
+        <div class="d-flex align-items-start gap-3">
+            <div class="fs-2 text-danger">
+                <i class="fa-solid fa-triangle-exclamation"></i>
+            </div>
+            <div>
+                <h5 class="fw-bold text-danger mb-1">
+                    Statutory Attendance Warning: Shortage Detected ({{ data.overall_pct }}% &lt; {{ data.threshold }}%)
+                </h5>
+                <p class="mb-1 text-dark">
+                    Your cumulative attendance across current semester subjects is currently <strong>{{ data.overall_pct }}%</strong>, 
+                    which is below the statutory requirement of <strong>{{ data.threshold }}%</strong>. 
+                    As per university academic regulations, students with attendance below {{ data.threshold }}% are liable to be debarred from appearing in semester end examinations.
+                </p>
+                <div class="small fw-semibold text-danger">
+                    Please contact your respective faculty members and attend all upcoming lectures immediately.
+                </div>
+            </div>
+        </div>
+    </div>
+{% else %}
+    <div class="eligible-alert-box shadow-sm">
+        <div class="d-flex align-items-center gap-3">
+            <div class="fs-2 text-success">
+                <i class="fa-solid fa-circle-check"></i>
+            </div>
+            <div>
+                <h5 class="fw-bold text-success mb-0">
+                    Good Standing: Overall Attendance {{ data.overall_pct }}%
+                </h5>
+                <p class="mb-0 text-dark small">
+                    You meet the statutory minimum threshold of {{ data.threshold }}%. Maintain regular class attendance to stay eligible for exams.
+                </p>
+            </div>
+        </div>
+    </div>
+{% endif %}
+
+<!-- Top Stats Overview -->
+<div class="row g-3 mb-4">
+    <div class="col-sm-6 col-md-3">
+        <div class="stat-card {% if data.overall_pct >= 75 %}stat-success{% else %}stat-danger{% endif %} h-100">
+            <div class="stat-value {% if data.overall_pct >= 75 %}text-success{% else %}text-danger{% endif %}">{{ data.overall_pct }}%</div>
+            <div class="stat-label">Cumulative Attendance</div>
+            <div class="attendance-progress mt-2">
+                <div class="attendance-progress-bar {% if data.overall_pct >= 75 %}progress-safe{% else %}progress-danger{% endif %}" style="width: {{ data.overall_pct }}%;"></div>
+            </div>
+        </div>
+    </div>
+    <div class="col-sm-6 col-md-3">
+        <div class="stat-card stat-info h-100">
+            <div class="stat-value text-primary">{{ data.overall_conducted }}</div>
+            <div class="stat-label">Total Classes Held</div>
+            <div class="text-muted small mt-1"><i class="fa-solid fa-calendar me-1"></i>Conducted to Date</div>
+        </div>
+    </div>
+    <div class="col-sm-6 col-md-3">
+        <div class="stat-card stat-success h-100">
+            <div class="stat-value text-success">{{ data.overall_attended }}</div>
+            <div class="stat-label">Classes Attended</div>
+            <div class="text-muted small mt-1"><i class="fa-solid fa-circle-check me-1"></i>Present Marks</div>
+        </div>
+    </div>
+    <div class="col-sm-6 col-md-3">
+        <div class="stat-card stat-danger h-100">
+            <div class="stat-value text-danger">{{ data.overall_missed }}</div>
+            <div class="stat-label">Classes Missed</div>
+            <div class="text-muted small mt-1"><i class="fa-solid fa-circle-xmark me-1"></i>Absences</div>
+        </div>
+    </div>
+</div>
+
+<!-- Subject-Wise Attendance Breakdown -->
+<h4 class="fw-bold mb-3"><i class="fa-solid fa-book me-2 text-primary"></i>Subject-Wise Attendance Breakdown</h4>
+<div class="row g-4 mb-4">
+    {% for subj in data.subjects %}
+        <div class="col-md-6 col-lg-4">
+            <div class="card h-100 {% if subj.is_defaulter %}border-danger border-2{% endif %}">
+                <div class="card-header d-flex justify-content-between align-items-center bg-white">
+                    <span class="badge bg-primary text-white">{{ subj.subject_code }}</span>
+                    {% if subj.is_defaulter %}
+                        <span class="badge-defaulter"><i class="fa-solid fa-triangle-exclamation me-1"></i>Shortage</span>
+                    {% else %}
+                        <span class="badge-eligible"><i class="fa-solid fa-check me-1"></i>Eligible</span>
+                    {% endif %}
+                </div>
+                <div class="card-body">
+                    <h5 class="fw-bold text-dark mb-1">{{ subj.subject_name }}</h5>
+                    <div class="text-muted small mb-3">
+                        <i class="fa-solid fa-user-tie me-1"></i>{{ subj.faculty_name }} &bull; {{ subj.credits }} Credits
+                    </div>
+
+                    <div class="d-flex justify-content-between align-items-end mb-1">
+                        <span class="text-muted small">Attendance Rate</span>
+                        <span class="fs-4 fw-bold {% if subj.percentage >= 75 %}text-success{% else %}text-danger{% endif %}">
+                            {{ subj.percentage }}%
+                        </span>
+                    </div>
+
+                    <div class="attendance-progress mb-3">
+                        <div class="attendance-progress-bar {% if subj.percentage >= 75 %}progress-safe{% else %}progress-danger{% endif %}" style="width: {{ subj.percentage }}%;"></div>
+                    </div>
+
+                    <div class="row text-center border rounded py-2 mb-3 bg-light g-0">
+                        <div class="col-4 border-end">
+                            <div class="fw-bold text-dark">{{ subj.conducted }}</div>
+                            <small class="text-muted" style="font-size: 0.75rem;">Held</small>
+                        </div>
+                        <div class="col-4 border-end">
+                            <div class="fw-bold text-success">{{ subj.attended }}</div>
+                            <small class="text-muted" style="font-size: 0.75rem;">Attended</small>
+                        </div>
+                        <div class="col-4">
+                            <div class="fw-bold text-danger">{{ subj.missed }}</div>
+                            <small class="text-muted" style="font-size: 0.75rem;">Missed</small>
+                        </div>
+                    </div>
+
+                    <!-- Practical Student Guidance -->
+                    <div class="p-2 rounded {% if subj.is_defaulter %}bg-danger-subtle text-danger{% else %}bg-success-subtle text-success{% endif %} small">
+                        <i class="fa-solid {% if subj.is_defaulter %}fa-triangle-exclamation{% else %}fa-lightbulb{% endif %} me-1"></i>
+                        {{ subj.advice }}
+                    </div>
+                </div>
+                <div class="card-footer bg-light text-end">
+                    <a href="{{ url_for('student_history', subject_id=subj.subject_id) }}" class="btn btn-sm btn-link text-decoration-none">
+                        View Subject History &rarr;
+                    </a>
+                </div>
+            </div>
+        </div>
+    {% endfor %}
+</div>
+
+<!-- Recent Lecture Attendance Records -->
+<div class="card">
+    <div class="card-header bg-white d-flex justify-content-between align-items-center py-3">
+        <span class="fw-bold"><i class="fa-solid fa-clock-rotate-left text-primary me-2"></i>Recent Class Attendance Records</span>
+        <a href="{{ url_for('student_history') }}" class="btn btn-sm btn-link text-decoration-none">View Complete Log &rarr;</a>
+    </div>
+    <div class="table-responsive">
+        <table class="table table-custom table-hover align-middle mb-0">
+            <thead>
+                <tr>
+                    <th>Date</th>
+                    <th>Slot</th>
+                    <th>Subject</th>
+                    <th>Conducted By</th>
+                    <th>Topic Discussed</th>
+                    <th class="text-center">Status</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% if recent_history %}
+                    {% for h in recent_history %}
+                        <tr>
+                            <td class="fw-bold">{{ h.session_date }}</td>
+                            <td><small class="text-muted">{{ h.session_slot }}</small></td>
+                            <td>
+                                <span class="badge bg-primary-subtle text-primary border">{{ h.subject_code }}</span>
+                                <span class="fw-semibold">{{ h.subject_name }}</span>
+                            </td>
+                            <td>{{ h.faculty_name }}</td>
+                            <td><small class="text-muted">{{ h.topic }}</small></td>
+                            <td class="text-center">
+                                {% if h.status == 'Present' %}
+                                    <span class="badge-present"><i class="fa-solid fa-check me-1"></i>Present</span>
+                                {% else %}
+                                    <span class="badge-absent"><i class="fa-solid fa-xmark me-1"></i>Absent</span>
+                                {% endif %}
+                            </td>
+                        </tr>
+                    {% endfor %}
+                {% else %}
+                    <tr>
+                        <td colspan="6" class="text-center py-4 text-muted">
+                            No attendance history records found.
+                        </td>
+                    </tr>
+                {% endif %}
+            </tbody>
+        </table>
+    </div>
+</div>
+{% endblock %}

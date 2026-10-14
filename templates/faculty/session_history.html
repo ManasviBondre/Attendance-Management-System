@@ -1,0 +1,107 @@
+{% extends 'base.html' %}
+
+{% block title %}Session History - Attendance Management System{% endblock %}
+
+{% block content %}
+<div class="page-header d-flex justify-content-between align-items-center flex-wrap gap-2">
+    <div>
+        <h1><i class="fa-solid fa-clock-rotate-left text-primary me-2"></i>Conducted Session History</h1>
+        <p>Review past lecture sessions and attendance summaries</p>
+    </div>
+    <div>
+        <a href="{{ url_for('faculty_mark_attendance') }}" class="btn btn-primary">
+            <i class="fa-solid fa-plus me-1"></i> New Attendance
+        </a>
+    </div>
+</div>
+
+<!-- Filters -->
+<div class="card mb-4">
+    <div class="card-body">
+        <form method="GET" action="{{ url_for('faculty_session_history') }}" class="row g-3 align-items-center">
+            <div class="col-md-5">
+                <label class="form-label fw-semibold small text-muted">Filter by Subject</label>
+                <select name="subject_id" class="form-select" onchange="this.form.submit()">
+                    <option value="">-- All Assigned Subjects --</option>
+                    {% for subj in assigned_subjects %}
+                        <option value="{{ subj.id }}" {% if selected_subject_id == subj.id %}selected{% endif %}>
+                            {{ subj.code }} - {{ subj.name }}
+                        </option>
+                    {% endfor %}
+                </select>
+            </div>
+            <div class="col-md-7">
+                <label class="form-label fw-semibold small text-muted">Filter Sessions</label>
+                <div class="input-group">
+                    <span class="input-group-text bg-white"><i class="fa-solid fa-magnifying-glass"></i></span>
+                    <input type="text" class="form-control table-search-input" data-table="facultyHistoryTable" placeholder="Filter by date, slot, or topic...">
+                </div>
+            </div>
+        </form>
+    </div>
+</div>
+
+<!-- Sessions Table -->
+<div class="card">
+    <div class="card-header bg-white d-flex justify-content-between align-items-center py-3">
+        <span class="fw-bold"><i class="fa-solid fa-list-check me-2 text-primary"></i>Lecture Session History ({{ sessions|length }})</span>
+    </div>
+    <div class="table-responsive">
+        <table class="table table-custom table-hover align-middle mb-0" id="facultyHistoryTable">
+            <thead>
+                <tr>
+                    <th>Date</th>
+                    <th>Slot</th>
+                    <th>Subject</th>
+                    <th>Lecture Topic</th>
+                    <th class="text-center">Present / Absent</th>
+                    <th class="text-center">Rate</th>
+                    <th class="text-end">Actions</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% if sessions %}
+                    {% for s in sessions %}
+                        <tr>
+                            <td class="fw-bold">{{ s.session_date }}</td>
+                            <td><small class="text-muted">{{ s.session_slot }}</small></td>
+                            <td>
+                                <span class="badge bg-primary-subtle text-primary border">{{ s.subject_code }}</span>
+                                <span class="fw-semibold">{{ s.subject_name }}</span>
+                            </td>
+                            <td><small class="text-muted">{{ s.topic }}</small></td>
+                            <td class="text-center">
+                                <span class="text-success fw-bold">{{ s.present_count }}</span>
+                                <span class="text-muted">/</span>
+                                <span class="text-danger fw-bold">{{ s.absent_count }}</span>
+                                <span class="text-muted small">({{ s.total_marked }})</span>
+                            </td>
+                            <td class="text-center">
+                                <span class="badge {% if s.percentage >= 75 %}bg-success{% else %}bg-warning text-dark{% endif %}">
+                                    {{ s.percentage }}%
+                                </span>
+                            </td>
+                            <td class="text-end">
+                                <div class="btn-group btn-group-sm">
+                                    <a href="{{ url_for('faculty_view_session', session_id=s.id) }}" class="btn btn-outline-secondary" title="View Roster">
+                                        <i class="fa-solid fa-eye"></i>
+                                    </a>
+                                    <a href="{{ url_for('faculty_edit_attendance', session_id=s.id) }}" class="btn btn-outline-primary" title="Edit Session">
+                                        <i class="fa-solid fa-pen-to-square"></i>
+                                    </a>
+                                </div>
+                            </td>
+                        </tr>
+                    {% endfor %}
+                {% else %}
+                    <tr>
+                        <td colspan="7" class="text-center py-4 text-muted">
+                            No sessions found matching criteria.
+                        </td>
+                    </tr>
+                {% endif %}
+            </tbody>
+        </table>
+    </div>
+</div>
+{% endblock %}

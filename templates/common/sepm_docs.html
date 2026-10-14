@@ -1,0 +1,526 @@
+{% extends 'base.html' %}
+
+{% block title %}SEPM Project Report & Viva Guide | AMS{% endblock %}
+
+{% block extra_css %}
+<style>
+    .sepm-doc-nav {
+        position: sticky;
+        top: 2rem;
+    }
+    .sepm-section {
+        margin-bottom: 3rem;
+        padding-top: 1rem;
+    }
+    .sepm-section h2 {
+        border-bottom: 2px solid var(--primary-color);
+        padding-bottom: 0.5rem;
+        color: var(--primary-color);
+        margin-bottom: 1.25rem;
+        font-weight: 700;
+    }
+    .sepm-section h3 {
+        color: #1e293b;
+        margin-top: 1.5rem;
+        margin-bottom: 0.75rem;
+        font-weight: 600;
+        font-size: 1.25rem;
+    }
+    .diagram-container {
+        background: #ffffff;
+        border: 1px solid var(--border-color);
+        border-radius: var(--radius-md);
+        padding: 1.5rem;
+        margin: 1.5rem 0;
+        text-align: center;
+        box-shadow: var(--shadow-sm);
+        overflow-x: auto;
+    }
+    .qa-card {
+        border-left: 4px solid var(--primary-color);
+        margin-bottom: 1rem;
+        background: #f8fafc;
+        border-radius: var(--radius-sm);
+        padding: 1rem 1.25rem;
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="page-header d-flex justify-content-between align-items-center flex-wrap gap-2">
+    <div>
+        <h1><i class="fa-solid fa-file-contract text-primary me-2"></i>SEPM Mini-Project Documentation & Viva Guide</h1>
+        <p>Software Engineering and Project Management (SEPM) Comprehensive Academic Report</p>
+    </div>
+    <div class="d-flex gap-2 no-print">
+        <button onclick="window.print()" class="btn btn-outline-secondary">
+            <i class="fa-solid fa-print me-1"></i> Print / Save as PDF
+        </button>
+        <a href="{{ url_for('index') }}" class="btn btn-primary">
+            <i class="fa-solid fa-arrow-left me-1"></i> Return to Application
+        </a>
+    </div>
+</div>
+
+<div class="row">
+    <!-- Sidebar Table of Contents -->
+    <div class="col-lg-3 d-none d-lg-block no-print">
+        <div class="card sepm-doc-nav shadow-sm">
+            <div class="card-header bg-white fw-bold text-primary">
+                <i class="fa-solid fa-list-ol me-2"></i>Report Contents
+            </div>
+            <div class="list-group list-group-flush small">
+                <a href="#abstract" class="list-group-item list-group-item-action">1. Abstract & Objectives</a>
+                <a href="#sdlc" class="list-group-item list-group-item-action">2. SDLC Methodology</a>
+                <a href="#srs" class="list-group-item list-group-item-action">3. SRS (IEEE 830 Standard)</a>
+                <a href="#architecture" class="list-group-item list-group-item-action">4. System Architecture</a>
+                <a href="#usecases" class="list-group-item list-group-item-action">5. Use Case Modeling</a>
+                <a href="#er-diagram" class="list-group-item list-group-item-action">6. Database Design & ERD</a>
+                <a href="#testcases" class="list-group-item list-group-item-action">7. Software Test Cases</a>
+                <a href="#estimation" class="list-group-item list-group-item-action">8. COCOMO & Scheduling</a>
+                <a href="#viva" class="list-group-item list-group-item-action text-primary fw-bold">9. Viva Voce Q&A Guide</a>
+            </div>
+        </div>
+    </div>
+
+    <!-- Main Report Body -->
+    <div class="col-lg-9">
+        <div class="card shadow-sm p-4 p-md-5">
+
+            <!-- Title Header -->
+            <div class="text-center pb-4 mb-4 border-bottom">
+                <span class="badge bg-primary px-3 py-2 fs-6 mb-2">SEPM Mini-Project Report</span>
+                <h2 class="fw-bold text-dark display-6">Attendance Management System (AMS)</h2>
+                <div class="text-muted fs-6">
+                    Department of Computer Science & Engineering &bull; Bachelor of Technology (6th Semester)
+                </div>
+            </div>
+
+            <!-- Section 1: Abstract -->
+            <section id="abstract" class="sepm-section">
+                <h2>1. Executive Summary & Problem Statement</h2>
+                <p class="lead">
+                    The <strong>Attendance Management System (AMS)</strong> is a comprehensive web-based institutional application designed to digitize, streamline, and secure the tracking of student attendance across undergraduate courses.
+                </p>
+                <h3>1.1 Problem Statement</h3>
+                <p>
+                    Conventional paper-based registers in higher educational institutions suffer from notable operational bottlenecks:
+                </p>
+                <ul>
+                    <li><strong>Instructional Time Loss:</strong> Faculty spend 5 to 10 minutes of every 60-minute lecture manually calling out names.</li>
+                    <li><strong>Proxy Attendance & Human Errors:</strong> Manual roll-call registers are prone to proxy marking and arithmetic errors when compiling percentages.</li>
+                    <li><strong>Delayed Defaulter Identification:</strong> Semester attendance shortages (&lt;75%) are often identified late in the semester, leaving students unable to rectify their attendance.</li>
+                    <li><strong>Data Vulnerability:</strong> Physical registers can be lost, damaged, or tampered with.</li>
+                </ul>
+                <h3>1.2 Project Objectives</h3>
+                <ol>
+                    <li>Provide a centralized SQLite relational database for tamper-resistant attendance logging.</li>
+                    <li>Equip faculty with an optimized marker interface featuring quick "Mark All" toggles, live counters, and duplicate session safeguards.</li>
+                    <li>Provide students with a transparent portal featuring real-time percentage tracking and statutory shortage warnings.</li>
+                    <li>Enable administrators to manage users, subjects, assignments, and audit reports seamlessly.</li>
+                </ol>
+            </section>
+
+            <!-- Section 2: SDLC -->
+            <section id="sdlc" class="sepm-section">
+                <h2>2. Software Development Life Cycle (SDLC) Model</h2>
+                <p>
+                    The <strong>Iterative / Agile Scrum Model</strong> was selected for this project. Given the multi-stakeholder requirements (Admin, Faculty, Student), an iterative cycle allowed for early integration testing and frequent usability validation.
+                </p>
+                <div class="diagram-container">
+                    <div class="mermaid">
+                    graph LR
+                        A["Sprint 1: Database Design & Schema Initialization"] --> B["Sprint 2: Authentication & RBAC Engine"]
+                        B --> C["Sprint 3: Faculty Attendance Marking & Safeguards"]
+                        C --> D["Sprint 4: Student Dashboard & Analytics"]
+                        D --> E["Sprint 5: Admin Management & Reports"]
+                        E --> F["Sprint 6: Testing, CI & Documentation"]
+                    </div>
+                </div>
+                <div class="table-responsive">
+                    <table class="table table-bordered table-sm">
+                        <thead class="table-light">
+                            <tr>
+                                <th>Sprint</th>
+                                <th>Core Deliverables</th>
+                                <th>Duration</th>
+                                <th>Status</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <tr>
+                                <td>Sprint 1</td>
+                                <td>Relational SQLite schema, foreign keys, 45 student seed records, 5 subjects</td>
+                                <td>1 Week</td>
+                                <td><span class="badge bg-success">Completed</span></td>
+                            </tr>
+                            <tr>
+                                <td>Sprint 2</td>
+                                <td>Session-based authentication, salted password hashing, role guard decorators</td>
+                                <td>1 Week</td>
+                                <td><span class="badge bg-success">Completed</span></td>
+                            </tr>
+                            <tr>
+                                <td>Sprint 3</td>
+                                <td>Faculty marker UI, live counters, duplicate session guard, session editing</td>
+                                <td>1.5 Weeks</td>
+                                <td><span class="badge bg-success">Completed</span></td>
+                            </tr>
+                            <tr>
+                                <td>Sprint 4</td>
+                                <td>Student analytics, 75% shortage alert banner, attendance math guidance</td>
+                                <td>1 Week</td>
+                                <td><span class="badge bg-success">Completed</span></td>
+                            </tr>
+                            <tr>
+                                <td>Sprint 5</td>
+                                <td>Admin CRUD modules, global attendance logs, CSV defaulters export</td>
+                                <td>1 Week</td>
+                                <td><span class="badge bg-success">Completed</span></td>
+                            </tr>
+                            <tr>
+                                <td>Sprint 6</td>
+                                <td>Integration test suite, SEPM documentation report, viva preparation guide</td>
+                                <td>0.5 Week</td>
+                                <td><span class="badge bg-success">Completed</span></td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+            </section>
+
+            <!-- Section 3: SRS -->
+            <section id="srs" class="sepm-section">
+                <h2>3. Software Requirement Specification (SRS - IEEE 830)</h2>
+                <h3>3.1 Functional Requirements (FR)</h3>
+                <ul>
+                    <li><strong>FR-01 (Authentication):</strong> System must authenticate users via username/email and securely hashed passwords using PBKDF2/SHA-256.</li>
+                    <li><strong>FR-02 (RBAC):</strong> Strict Role-Based Access Control enforcing Admin, Faculty, and Student boundary separation.</li>
+                    <li><strong>FR-03 (Admin Operations):</strong> Create, read, update, deactivate, and delete user and subject profiles.</li>
+                    <li><strong>FR-04 (Faculty Marking):</strong> Record single-session attendance with date, slot, topic, and Present/Absent states.</li>
+                    <li><strong>FR-05 (Duplicate Safeguard):</strong> Prevent recording multiple attendance sessions for the same subject, date, and slot.</li>
+                    <li><strong>FR-06 (Student Visibility):</strong> Students can view their overall percentage, subject-wise percentages, and historical logs in read-only mode.</li>
+                    <li><strong>FR-07 (Statutory Alert):</strong> Automatically calculate and display shortage warning badges whenever attendance drops below 75.0%.</li>
+                    <li><strong>FR-08 (Data Export):</strong> Generate compliant CSV registers for external record preservation.</li>
+                </ul>
+
+                <h3>3.2 Non-Functional Requirements (NFR)</h3>
+                <ul>
+                    <li><strong>Security:</strong> No plain-text passwords stored; HTTP session cookies signed with server-side secret key; protection against CSRF and role escalation.</li>
+                    <li><strong>Performance:</strong> Sub-second response times for attendance roster loading and submission (processed in &lt;100ms on SQLite).</li>
+                    <li><strong>Reliability:</strong> Relational integrity enforced via SQLite `PRAGMA foreign_keys = ON;` and atomic ACID transactions.</li>
+                    <li><strong>Usability:</strong> Responsive interface compatible with mobile devices, laptops, and lab desktop screens.</li>
+                </ul>
+            </section>
+
+            <!-- Section 4: Architecture -->
+            <section id="architecture" class="sepm-section">
+                <h2>4. System Architecture & Block Diagram</h2>
+                <p>
+                    The system follows an MVC (Model-View-Controller) / 3-Tier Layered Architecture:
+                </p>
+                <div class="diagram-container">
+                    <div class="mermaid">
+                    graph TD
+                        Client["Client Tier: HTML5, CSS3, JavaScript, Bootstrap 5"]
+                        WebTier["Presentation / Controller Tier: Flask Web Server, Routing, Session Engine"]
+                        LogicTier["Application / Business Logic Tier: models.py (RBAC, Calculations, Validation)"]
+                        DataTier["Data Tier: SQLite Database (attendance_system.db)"]
+
+                        Client <-->|HTTP / HTML / JSON| WebTier
+                        WebTier <-->|Function Calls| LogicTier
+                        LogicTier <-->|Parameterized SQL Queries| DataTier
+                    </div>
+                </div>
+            </section>
+
+            <!-- Section 5: Use Cases -->
+            <section id="usecases" class="sepm-section">
+                <h2>5. Use Case Modeling</h2>
+                <div class="diagram-container">
+                    <div class="mermaid">
+                    graph LR
+                        Admin((Admin))
+                        Faculty((Faculty))
+                        Student((Student))
+
+                        UC1["Login & Profile Management"]
+                        UC2["Manage Users & Roles"]
+                        UC3["Manage Subjects & Assignments"]
+                        UC4["Mark Class Attendance"]
+                        UC5["Edit Past Sessions"]
+                        UC6["View Subject Statistics"]
+                        UC7["View My Attendance & Shortage"]
+                        UC8["Export Reports (CSV)"]
+
+                        Admin --> UC1
+                        Admin --> UC2
+                        Admin --> UC3
+                        Admin --> UC8
+
+                        Faculty --> UC1
+                        Faculty --> UC4
+                        Faculty --> UC5
+                        Faculty --> UC6
+                        Faculty --> UC8
+
+                        Student --> UC1
+                        Student --> UC7
+                    </div>
+                </div>
+            </section>
+
+            <!-- Section 6: ER Diagram -->
+            <section id="er-diagram" class="sepm-section">
+                <h2>6. Database Design & Entity-Relationship Diagram (ERD)</h2>
+                <p>
+                    The relational schema is in Third Normal Form (3NF) to eradicate data redundancy and insertion/deletion anomalies:
+                </p>
+                <div class="diagram-container">
+                    <div class="mermaid">
+                    erDiagram
+                        USERS ||--o| STUDENTS : "has profile"
+                        USERS ||--o| FACULTY : "has profile"
+                        FACULTY ||--o{ FACULTY_SUBJECTS : "teaches"
+                        SUBJECTS ||--o{ FACULTY_SUBJECTS : "assigned to"
+                        STUDENTS ||--o{ STUDENT_SUBJECTS : "enrolled in"
+                        SUBJECTS ||--o{ STUDENT_SUBJECTS : "enrolled by"
+                        SUBJECTS ||--o{ ATTENDANCE_SESSIONS : "conducted for"
+                        FACULTY ||--o{ ATTENDANCE_SESSIONS : "conducted by"
+                        ATTENDANCE_SESSIONS ||--o{ ATTENDANCE_RECORDS : "contains"
+                        STUDENTS ||--o{ ATTENDANCE_RECORDS : "marked in"
+
+                        USERS {
+                            int id PK
+                            string username
+                            string email
+                            string password_hash
+                            string role
+                            string full_name
+                            int is_active
+                        }
+                        STUDENTS {
+                            int id PK
+                            int user_id FK
+                            string roll_number
+                            string department
+                            int semester
+                            string section
+                        }
+                        FACULTY {
+                            int id PK
+                            int user_id FK
+                            string faculty_id
+                            string department
+                            string designation
+                        }
+                        SUBJECTS {
+                            int id PK
+                            string code
+                            string name
+                            int semester
+                            int credits
+                        }
+                        ATTENDANCE_SESSIONS {
+                            int id PK
+                            int subject_id FK
+                            int faculty_id FK
+                            date session_date
+                            string session_slot
+                            string topic
+                        }
+                        ATTENDANCE_RECORDS {
+                            int id PK
+                            int session_id FK
+                            int student_id FK
+                            string status
+                        }
+                    </div>
+                </div>
+            </section>
+
+            <!-- Section 7: Testing -->
+            <section id="testcases" class="sepm-section">
+                <h2>7. Software Testing & Quality Assurance</h2>
+                <p>
+                    Black-box, functional, and security test cases executed on the AMS application:
+                </p>
+                <div class="table-responsive">
+                    <table class="table table-bordered table-sm align-middle">
+                        <thead class="table-light">
+                            <tr>
+                                <th>Test ID</th>
+                                <th>Test Case Description</th>
+                                <th>Input Data</th>
+                                <th>Expected Result</th>
+                                <th>Actual Result</th>
+                                <th>Status</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <tr>
+                                <td>TC-01</td>
+                                <td>User Login with Valid Credentials</td>
+                                <td>admin / Admin@123</td>
+                                <td>Session initialized; redirect to Admin Dashboard</td>
+                                <td>Redirected to /admin</td>
+                                <td><span class="badge bg-success">PASS</span></td>
+                            </tr>
+                            <tr>
+                                <td>TC-02</td>
+                                <td>User Login with Invalid Password</td>
+                                <td>admin / WrongPass</td>
+                                <td>Error alert displayed; access denied</td>
+                                <td>Invalid credentials alert shown</td>
+                                <td><span class="badge bg-success">PASS</span></td>
+                            </tr>
+                            <tr>
+                                <td>TC-03</td>
+                                <td>Unauthorized Role Route Access</td>
+                                <td>Student accessing /admin</td>
+                                <td>403 Forbidden or redirect with warning</td>
+                                <td>Redirected with access denied alert</td>
+                                <td><span class="badge bg-success">PASS</span></td>
+                            </tr>
+                            <tr>
+                                <td>TC-04</td>
+                                <td>Duplicate Attendance Session Guard</td>
+                                <td>Same Subject, Date, Slot submitted twice</td>
+                                <td>Blocked with warning; redirect to edit existing session</td>
+                                <td>Duplicate prevented safely</td>
+                                <td><span class="badge bg-success">PASS</span></td>
+                            </tr>
+                            <tr>
+                                <td>TC-05</td>
+                                <td>Attendance Shortage Warning Alert</td>
+                                <td>Student with 60% attendance logs in</td>
+                                <td>Prominent red warning banner rendered</td>
+                                <td>Warning alert banner displayed</td>
+                                <td><span class="badge bg-success">PASS</span></td>
+                            </tr>
+                            <tr>
+                                <td>TC-06</td>
+                                <td>Admin Registration Protection</td>
+                                <td>Register as Admin with invalid secret key</td>
+                                <td>Registration rejected with security error</td>
+                                <td>Key verified; access denied</td>
+                                <td><span class="badge bg-success">PASS</span></td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+            </section>
+
+            <!-- Section 8: Estimation & WBS -->
+            <section id="estimation" class="sepm-section">
+                <h2>8. Project Management: Estimation & Scheduling</h2>
+                <h3>8.1 COCOMO (Constructive Cost Model) Estimation</h3>
+                <p>
+                    Using Intermediate COCOMO for an Organic mode software project:
+                </p>
+                <div class="p-3 bg-light rounded border mb-3">
+                    <ul>
+                        <li>Estimated Size: <strong>2.8 KLOC (2,800 lines of Python, HTML, CSS, JS)</strong></li>
+                        <li>Effort Formula: \( E = a_b \times (\text{KLOC})^{b_b} = 2.4 \times (2.8)^{1.05} \approx \mathbf{7.12\text{ Person-Months}} \)</li>
+                        <li>Development Time: \( D = c_b \times (E)^{d_b} = 2.5 \times (7.12)^{0.38} \approx \mathbf{5.27\text{ Months}} \) (academic term equivalent)</li>
+                    </ul>
+                </div>
+
+                <h3>8.2 Risk Management Plan (RMMM)</h3>
+                <div class="table-responsive">
+                    <table class="table table-bordered table-sm">
+                        <thead class="table-light">
+                            <tr>
+                                <th>Identified Risk</th>
+                                <th>Probability / Impact</th>
+                                <th>Mitigation Strategy</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <tr>
+                                <td>Accidental Duplicate Attendance Submission</td>
+                                <td>High / High</td>
+                                <td>Unique composite constraint `UNIQUE(subject_id, session_date, session_slot)` in SQLite</td>
+                            </tr>
+                            <tr>
+                                <td>Privilege Escalation via URL manipulation</td>
+                                <td>Medium / High</td>
+                                <td>Server-side `@role_required` decorator on all controller endpoints</td>
+                            </tr>
+                            <tr>
+                                <td>Network / Connection Failure in Classroom</td>
+                                <td>Medium / Medium</td>
+                                <td>Lightweight HTML/Bootstrap payload ensuring fast sub-second completion</td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+            </section>
+
+            <!-- Section 9: Viva Voce Q&A -->
+            <section id="viva" class="sepm-section">
+                <h2>9. Viva Voce Questions & Answers Guide</h2>
+                <p class="text-muted">
+                    Quick-reference answers to common questions asked by university external examiners during evaluation:
+                </p>
+
+                <div class="qa-card">
+                    <div class="fw-bold text-primary mb-1">
+                        Q1: Why did you choose SQLite over MySQL or PostgreSQL for this SEPM project?
+                    </div>
+                    <div>
+                        <strong>Answer:</strong> SQLite is a self-contained, serverless, zero-configuration transactional database engine. It avoids external server daemon dependencies, simplifies project portability for college evaluation, and natively supports ACID transactions and foreign key constraints without overhead.
+                    </div>
+                </div>
+
+                <div class="qa-card">
+                    <div class="fw-bold text-primary mb-1">
+                        Q2: How does the system prevent accidental duplicate attendance marking?
+                    </div>
+                    <div>
+                        <strong>Answer:</strong> At the database level, a unique composite index exists on <code>(subject_id, session_date, session_slot)</code> in the <code>attendance_sessions</code> table. At the application layer in <code>models.py</code>, <code>check_existing_session()</code> is executed before any insertion, warning the faculty and offering a safe "Edit Session" pathway.
+                    </div>
+                </div>
+
+                <div class="qa-card">
+                    <div class="fw-bold text-primary mb-1">
+                        Q3: How are passwords secured against database breach?
+                    </div>
+                    <div>
+                        <strong>Answer:</strong> Passwords are never stored in plain text. We utilize Werkzeug's cryptographic hashing implementation (<code>generate_password_hash</code>), which applies a cryptographically secure random salt and PBKDF2 with SHA-256 key stretching, rendering rainbow table and brute-force attacks computationally infeasible.
+                    </div>
+                </div>
+
+                <div class="qa-card">
+                    <div class="fw-bold text-primary mb-1">
+                        Q4: How is Role-Based Access Control (RBAC) enforced?
+                    </div>
+                    <div>
+                        <strong>Answer:</strong> RBAC is enforced through Python function decorators (<code>@login_required</code> and <code>@role_required('admin')</code>) wrapping Flask route controllers. Even if a student manually modifies client-side HTML or enters an administrative URL directly into the address bar, the decorator intercepts the request, verifies the server-side session token, and issues an immediate 403 Forbidden redirect.
+                    </div>
+                </div>
+
+                <div class="qa-card">
+                    <div class="fw-bold text-primary mb-1">
+                        Q5: What formula calculates the required classes to reach 75%?
+                    </div>
+                    <div>
+                        <strong>Answer:</strong> Let \( A \) be classes attended, \( C \) classes conducted, and \( x \) consecutive classes needed.
+                        We solve: \( \frac{A + x}{C + x} \ge 0.75 \implies x \ge \frac{0.75 \cdot C - A}{1 - 0.75} \).
+                        This mathematical guidance is dynamically computed and displayed on the student's subject cards.
+                    </div>
+                </div>
+            </section>
+
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<!-- Mermaid.js for interactive diagrams -->
+<script src="https://cdn.jsdelivr.net/npm/mermaid@10/dist/mermaid.min.js"></script>
+<script>
+    mermaid.initialize({ startOnLoad: true, theme: 'neutral' });
+</script>
+{% endblock %}

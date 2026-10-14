@@ -1,0 +1,215 @@
+{% extends 'base.html' %}
+
+{% block title %}Admin Dashboard - Attendance Management System{% endblock %}
+
+{% block content %}
+<div class="page-header d-flex justify-content-between align-items-center flex-wrap gap-2">
+    <div>
+        <h1><i class="fa-solid fa-gauge-high text-primary me-2"></i>Administrator Dashboard</h1>
+        <p>Comprehensive overview of students, faculty, subjects, and attendance health metrics</p>
+    </div>
+    <div class="d-flex gap-2">
+        <a href="{{ url_for('admin_create_user') }}" class="btn btn-primary">
+            <i class="fa-solid fa-user-plus me-1"></i> Add User
+        </a>
+        <a href="{{ url_for('admin_create_subject') }}" class="btn btn-outline-primary">
+            <i class="fa-solid fa-plus me-1"></i> Add Subject
+        </a>
+        <a href="{{ url_for('export_defaulters_csv') }}" class="btn btn-outline-danger">
+            <i class="fa-solid fa-file-arrow-down me-1"></i> Export Defaulters
+        </a>
+    </div>
+</div>
+
+<!-- Key Performance Indicators (KPIs) -->
+<div class="row g-3 mb-4">
+    <div class="col-sm-6 col-xl-2">
+        <div class="stat-card stat-info h-100">
+            <div class="stat-value text-primary">{{ stats.total_students }}</div>
+            <div class="stat-label">Total Students</div>
+            <div class="text-muted small mt-1"><i class="fa-solid fa-users me-1"></i>Active Roster</div>
+        </div>
+    </div>
+    <div class="col-sm-6 col-xl-2">
+        <div class="stat-card stat-info h-100">
+            <div class="stat-value text-secondary">{{ stats.total_faculty }}</div>
+            <div class="stat-label">Faculty Members</div>
+            <div class="text-muted small mt-1"><i class="fa-solid fa-chalkboard-user me-1"></i>Teaching Staff</div>
+        </div>
+    </div>
+    <div class="col-sm-6 col-xl-2">
+        <div class="stat-card stat-info h-100">
+            <div class="stat-value text-dark">{{ stats.total_subjects }}</div>
+            <div class="stat-label">Active Subjects</div>
+            <div class="text-muted small mt-1"><i class="fa-solid fa-book me-1"></i>6th Sem Core</div>
+        </div>
+    </div>
+    <div class="col-sm-6 col-xl-2">
+        <div class="stat-card stat-info h-100">
+            <div class="stat-value text-indigo">{{ stats.total_sessions }}</div>
+            <div class="stat-label">Sessions Taken</div>
+            <div class="text-muted small mt-1"><i class="fa-solid fa-calendar-check me-1"></i>Lectures Held</div>
+        </div>
+    </div>
+    <div class="col-sm-6 col-xl-2">
+        <div class="stat-card {% if stats.overall_pct >= 75 %}stat-success{% else %}stat-danger{% endif %} h-100">
+            <div class="stat-value {% if stats.overall_pct >= 75 %}text-success{% else %}text-danger{% endif %}">{{ stats.overall_pct }}%</div>
+            <div class="stat-label">System Attendance</div>
+            <div class="text-muted small mt-1"><i class="fa-solid fa-chart-line me-1"></i>Average</div>
+        </div>
+    </div>
+    <div class="col-sm-6 col-xl-2">
+        <div class="stat-card stat-danger h-100">
+            <div class="stat-value text-danger">{{ stats.defaulter_count }}</div>
+            <div class="stat-label">Defaulters (&lt;75%)</div>
+            <div class="text-muted small mt-1"><i class="fa-solid fa-triangle-exclamation me-1"></i>Shortage Alert</div>
+        </div>
+    </div>
+</div>
+
+<div class="row g-4">
+    <!-- Active Subjects Overview -->
+    <div class="col-lg-7">
+        <div class="card h-100">
+            <div class="card-header d-flex justify-content-between align-items-center">
+                <span><i class="fa-solid fa-book-bookmark text-primary me-2"></i>Active Semester Subjects</span>
+                <a href="{{ url_for('admin_subjects') }}" class="btn btn-sm btn-link text-decoration-none">View All Subjects &rarr;</a>
+            </div>
+            <div class="table-responsive">
+                <table class="table table-custom table-hover align-middle mb-0">
+                    <thead>
+                        <tr>
+                            <th>Code</th>
+                            <th>Subject Name</th>
+                            <th>Faculty Assigned</th>
+                            <th class="text-center">Lectures</th>
+                            <th class="text-center">Enrolled</th>
+                            <th class="text-end">Actions</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for subj in subjects %}
+                            <tr>
+                                <td><span class="badge bg-light text-dark border">{{ subj.code }}</span></td>
+                                <td class="fw-semibold">{{ subj.name }}</td>
+                                <td>
+                                    {% if subj.faculty_name %}
+                                        <i class="fa-solid fa-user-tie text-muted me-1"></i>{{ subj.faculty_name }}
+                                    {% else %}
+                                        <span class="badge bg-warning text-dark">Unassigned</span>
+                                    {% endif %}
+                                </td>
+                                <td class="text-center fw-bold">{{ subj.total_sessions }}</td>
+                                <td class="text-center">{{ subj.enrolled_students }}</td>
+                                <td class="text-end">
+                                    <a href="{{ url_for('faculty_subject_stats', subject_id=subj.id) }}" class="btn btn-sm btn-outline-info" title="View Statistics">
+                                        <i class="fa-solid fa-chart-simple"></i>
+                                    </a>
+                                </td>
+                            </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+
+    <!-- Defaulter Warning Preview -->
+    <div class="col-lg-5">
+        <div class="card h-100">
+            <div class="card-header d-flex justify-content-between align-items-center bg-danger-subtle text-danger">
+                <span><i class="fa-solid fa-triangle-exclamation me-2"></i>Attendance Shortage Alert (&lt;75%)</span>
+                <a href="{{ url_for('admin_reports') }}" class="btn btn-sm btn-outline-danger">Full Report &rarr;</a>
+            </div>
+            <div class="card-body p-0">
+                {% if defaulters %}
+                    <div class="table-responsive">
+                        <table class="table table-custom table-hover mb-0">
+                            <thead>
+                                <tr>
+                                    <th>Roll No</th>
+                                    <th>Student Name</th>
+                                    <th class="text-center">Attended</th>
+                                    <th class="text-end">Attendance</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                {% for d in defaulters %}
+                                    <tr>
+                                        <td class="fw-bold">{{ d.roll_number }}</td>
+                                        <td>{{ d.full_name }}</td>
+                                        <td class="text-center">{{ d.attended }}/{{ d.total_classes }}</td>
+                                        <td class="text-end">
+                                            <span class="badge-defaulter">{{ d.percentage }}%</span>
+                                        </td>
+                                    </tr>
+                                {% endfor %}
+                            </tbody>
+                        </table>
+                    </div>
+                {% else %}
+                    <div class="p-4 text-center text-muted">
+                        <i class="fa-solid fa-circle-check text-success fa-2x mb-2"></i>
+                        <p class="mb-0">Excellent! No students currently fall below the 75% attendance threshold.</p>
+                    </div>
+                {% endif %}
+            </div>
+            <div class="card-footer bg-light small text-muted">
+                <i class="fa-solid fa-info-circle me-1"></i> Students below 75% are ineligible for university final examinations without approved medical condonation.
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Recent Attendance Sessions -->
+<div class="card mt-4">
+    <div class="card-header d-flex justify-content-between align-items-center">
+        <span><i class="fa-solid fa-clock-rotate-left text-primary me-2"></i>Recent Attendance Sessions Across Departments</span>
+        <a href="{{ url_for('admin_attendance') }}" class="btn btn-sm btn-link text-decoration-none">View All Logs &rarr;</a>
+    </div>
+    <div class="table-responsive">
+        <table class="table table-custom table-hover align-middle mb-0">
+            <thead>
+                <tr>
+                    <th>Date</th>
+                    <th>Slot</th>
+                    <th>Subject</th>
+                    <th>Conducted By</th>
+                    <th>Topic Discussed</th>
+                    <th class="text-center">Present / Absent</th>
+                    <th class="text-center">Rate</th>
+                    <th class="text-end">Action</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for ses in recent_sessions %}
+                    <tr>
+                        <td class="fw-bold">{{ ses.session_date }}</td>
+                        <td><small class="text-muted">{{ ses.session_slot }}</small></td>
+                        <td><span class="badge bg-primary-subtle text-primary border">{{ ses.subject_code }}</span> {{ ses.subject_name }}</td>
+                        <td>{{ ses.faculty_name }}</td>
+                        <td><small class="text-muted">{{ ses.topic }}</small></td>
+                        <td class="text-center">
+                            <span class="text-success fw-bold">{{ ses.present_count }}</span> / 
+                            <span class="text-danger fw-bold">{{ ses.absent_count }}</span>
+                        </td>
+                        <td class="text-center">
+                            <span class="badge {% if ses.percentage >= 75 %}bg-success{% else %}bg-warning text-dark{% endif %}">
+                                {{ ses.percentage }}%
+                            </span>
+                        </td>
+                        <td class="text-end">
+                            <a href="{{ url_for('faculty_view_session', session_id=ses.id) }}" class="btn btn-sm btn-outline-secondary" title="View Roster">
+                                <i class="fa-solid fa-eye"></i>
+                            </a>
+                            <a href="{{ url_for('faculty_edit_attendance', session_id=ses.id) }}" class="btn btn-sm btn-outline-primary" title="Edit Session">
+                                <i class="fa-solid fa-pen-to-square"></i>
+                            </a>
+                        </td>
+                    </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+</div>
+{% endblock %}

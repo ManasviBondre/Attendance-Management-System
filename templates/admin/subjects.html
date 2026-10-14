@@ -1,0 +1,89 @@
+{% extends 'base.html' %}
+
+{% block title %}Manage Subjects - Attendance Management System{% endblock %}
+
+{% block content %}
+<div class="page-header d-flex justify-content-between align-items-center flex-wrap gap-2">
+    <div>
+        <h1><i class="fa-solid fa-book-bookmark text-primary me-2"></i>Subject Management</h1>
+        <p>Curriculum subjects, faculty teaching assignments, and student enrollment</p>
+    </div>
+    <div>
+        <a href="{{ url_for('admin_create_subject') }}" class="btn btn-primary">
+            <i class="fa-solid fa-plus me-1"></i> Add Subject
+        </a>
+    </div>
+</div>
+
+<div class="card">
+    <div class="card-header d-flex justify-content-between align-items-center">
+        <span class="fw-bold"><i class="fa-solid fa-layer-group me-2 text-primary"></i>All Academic Subjects ({{ subjects|length }})</span>
+    </div>
+    <div class="table-responsive">
+        <table class="table table-custom table-hover align-middle mb-0">
+            <thead>
+                <tr>
+                    <th>Code</th>
+                    <th>Subject Title</th>
+                    <th>Department & Sem</th>
+                    <th>Credits</th>
+                    <th>Assigned Faculty</th>
+                    <th class="text-center">Enrolled Students</th>
+                    <th class="text-center">Classes Taken</th>
+                    <th class="text-end">Actions</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for subj in subjects %}
+                    <tr>
+                        <td>
+                            <span class="badge bg-primary text-white fs-6">{{ subj.code }}</span>
+                        </td>
+                        <td>
+                            <div class="fw-bold text-dark fs-6">{{ subj.name }}</div>
+                        </td>
+                        <td>
+                            <div>{{ subj.department }}</div>
+                            <small class="text-muted">Semester {{ subj.semester }}</small>
+                        </td>
+                        <td>
+                            <span class="badge bg-secondary-subtle text-secondary">{{ subj.credits }} Credits</span>
+                        </td>
+                        <td>
+                            {% if subj.faculty_name %}
+                                <div class="fw-semibold text-primary">
+                                    <i class="fa-solid fa-chalkboard-user me-1"></i>{{ subj.faculty_name }}
+                                </div>
+                                <small class="text-muted">ID: {{ subj.faculty_code }}</small>
+                            {% else %}
+                                <span class="badge bg-warning text-dark"><i class="fa-solid fa-triangle-exclamation me-1"></i>Not Assigned</span>
+                            {% endif %}
+                        </td>
+                        <td class="text-center">
+                            <span class="badge bg-light text-dark border px-3 py-2 fs-6">{{ subj.enrolled_students }}</span>
+                        </td>
+                        <td class="text-center">
+                            <span class="badge bg-light text-primary border px-3 py-2 fs-6 fw-bold">{{ subj.total_sessions }}</span>
+                        </td>
+                        <td class="text-end">
+                            <div class="btn-group btn-group-sm">
+                                <a href="{{ url_for('faculty_subject_stats', subject_id=subj.id) }}" class="btn btn-outline-info" title="View Attendance Stats">
+                                    <i class="fa-solid fa-chart-simple"></i>
+                                </a>
+                                <a href="{{ url_for('admin_edit_subject', subject_id=subj.id) }}" class="btn btn-outline-primary" title="Edit Subject">
+                                    <i class="fa-solid fa-pen-to-square"></i>
+                                </a>
+                                <form method="POST" action="{{ url_for('admin_delete_subject', subject_id=subj.id) }}" class="d-inline" onsubmit="return confirm('Are you sure you want to delete {{ subj.name }}? This will permanently delete all attendance records for this subject.');">
+                                    <button type="submit" class="btn btn-outline-danger" title="Delete Subject">
+                                        <i class="fa-solid fa-trash-can"></i>
+                                    </button>
+                                </form>
+                            </div>
+                        </td>
+                    </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+</div>
+{% endblock %}

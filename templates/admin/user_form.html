@@ -1,0 +1,152 @@
+{% extends 'base.html' %}
+
+{% block title %}{% if mode == 'create' %}Create New User{% else %}Edit User - {{ user.full_name }}{% endif %} | AMS{% endblock %}
+
+{% block content %}
+<div class="row justify-content-center">
+    <div class="col-lg-8 col-xl-7">
+        <div class="card shadow-sm">
+            <div class="card-header bg-white py-3">
+                <div class="d-flex justify-content-between align-items-center">
+                    <h5 class="mb-0 fw-bold text-primary">
+                        <i class="fa-solid {% if mode == 'create' %}fa-user-plus{% else %}fa-user-pen{% endif %} me-2"></i>
+                        {% if mode == 'create' %}Create New System User{% else %}Edit User: {{ user.full_name }}{% endif %}
+                    </h5>
+                    <a href="{{ url_for('admin_users') }}" class="btn btn-sm btn-outline-secondary">
+                        <i class="fa-solid fa-arrow-left me-1"></i> Back to Users
+                    </a>
+                </div>
+            </div>
+
+            <div class="card-body p-4">
+                <form method="POST">
+                    {% if mode == 'create' %}
+                        <!-- Role Selection -->
+                        <div class="mb-3">
+                            <label for="registrationRoleSelect" class="form-label fw-semibold">Role <span class="text-danger">*</span></label>
+                            <select class="form-select" id="registrationRoleSelect" name="role" required>
+                                <option value="student" selected>Student</option>
+                                <option value="faculty">Faculty Member</option>
+                                <option value="admin">Administrator</option>
+                            </select>
+                        </div>
+                    {% else %}
+                        <div class="mb-3">
+                            <label class="form-label fw-semibold">Role</label>
+                            <input type="text" class="form-control bg-light" value="{{ user.role|capitalize }}" readonly>
+                        </div>
+                    {% endif %}
+
+                    <!-- Common fields -->
+                    <div class="row">
+                        <div class="col-md-6 mb-3">
+                            <label for="full_name" class="form-label fw-semibold">Full Name <span class="text-danger">*</span></label>
+                            <input type="text" class="form-control" id="full_name" name="full_name" value="{{ user.full_name if user else '' }}" required>
+                        </div>
+                        <div class="col-md-6 mb-3">
+                            <label for="username" class="form-label fw-semibold">Username <span class="text-danger">*</span></label>
+                            <input type="text" class="form-control" id="username" name="username" value="{{ user.username if user else '' }}" {% if mode == 'edit' %}readonly class="bg-light"{% endif %} required>
+                        </div>
+                    </div>
+
+                    <div class="row">
+                        <div class="col-md-6 mb-3">
+                            <label for="email" class="form-label fw-semibold">Email Address <span class="text-danger">*</span></label>
+                            <input type="email" class="form-control" id="email" name="email" value="{{ user.email if user else '' }}" required>
+                        </div>
+                        <div class="col-md-6 mb-3">
+                            <label for="phone" class="form-label fw-semibold">Phone Number</label>
+                            <input type="tel" class="form-control" id="phone" name="phone" value="{{ user.phone if user else '' }}" placeholder="+91 9876543210">
+                        </div>
+                    </div>
+
+                    {% if mode == 'create' %}
+                        <div class="mb-3">
+                            <label for="password" class="form-label fw-semibold">Initial Password <span class="text-danger">*</span></label>
+                            <input type="password" class="form-control" id="password" name="password" minlength="6" placeholder="Min 6 characters" required>
+                            <div class="form-text">User can change this password after logging into their portal.</div>
+                        </div>
+                    {% endif %}
+
+                    <!-- Student Specific Section -->
+                    <div id="studentSpecificFields" class="border-top pt-3 mt-3" {% if mode == 'edit' and user.role != 'student' %}style="display: none;"{% endif %}>
+                        <h6 class="fw-bold text-primary mb-3"><i class="fa-solid fa-graduation-cap me-2"></i>Student Specific Details</h6>
+                        <div class="row">
+                            <div class="col-md-6 mb-3">
+                                <label for="roll_number" class="form-label fw-semibold">University Roll Number</label>
+                                <input type="text" class="form-control text-uppercase" id="roll_number" name="roll_number" value="{{ user.student_details.roll_number if user and user.student_details else '' }}" placeholder="e.g. 22CS046">
+                            </div>
+                            <div class="col-md-6 mb-3">
+                                <label for="department" class="form-label fw-semibold">Department</label>
+                                <input type="text" class="form-control" id="department" name="department" value="{{ user.student_details.department if user and user.student_details else 'Computer Science & Engineering' }}">
+                            </div>
+                        </div>
+                        <div class="row">
+                            <div class="col-md-4 mb-3">
+                                <label for="semester" class="form-label fw-semibold">Semester</label>
+                                <select class="form-select" id="semester" name="semester">
+                                    {% for s in range(1, 9) %}
+                                        <option value="{{ s }}" {% if user and user.student_details and user.student_details.semester == s or (not user and s == 6) %}selected{% endif %}>Semester {{ s }}</option>
+                                    {% endfor %}
+                                </select>
+                            </div>
+                            <div class="col-md-4 mb-3">
+                                <label for="section" class="form-label fw-semibold">Section</label>
+                                <input type="text" class="form-control" id="section" name="section" value="{{ user.student_details.section if user and user.student_details else 'A' }}">
+                            </div>
+                            <div class="col-md-4 mb-3">
+                                <label for="batch_year" class="form-label fw-semibold">Batch Year</label>
+                                <input type="text" class="form-control" id="batch_year" name="batch_year" value="{{ user.student_details.batch_year if user and user.student_details else '2022-2026' }}">
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Faculty Specific Section -->
+                    <div id="facultySpecificFields" class="border-top pt-3 mt-3" {% if mode == 'create' or (mode == 'edit' and user.role != 'faculty') %}style="display: none;"{% endif %}>
+                        <h6 class="fw-bold text-primary mb-3"><i class="fa-solid fa-chalkboard-user me-2"></i>Faculty Specific Details</h6>
+                        <div class="row">
+                            <div class="col-md-6 mb-3">
+                                <label for="faculty_id" class="form-label fw-semibold">Faculty Employee ID</label>
+                                <input type="text" class="form-control text-uppercase" id="faculty_id" name="faculty_id" value="{{ user.faculty_details.faculty_id if user and user.faculty_details else '' }}" placeholder="e.g. FAC006">
+                            </div>
+                            <div class="col-md-6 mb-3">
+                                <label for="designation" class="form-label fw-semibold">Designation</label>
+                                <input type="text" class="form-control" id="designation" name="designation" value="{{ user.faculty_details.designation if user and user.faculty_details else 'Assistant Professor' }}">
+                            </div>
+                        </div>
+                        {% if mode == 'create' %}
+                            <div class="mb-3">
+                                <label for="subject_id" class="form-label fw-semibold">Assign Subject (Optional)</label>
+                                <select class="form-select" id="subject_id" name="subject_id">
+                                    <option value="">-- Select Subject --</option>
+                                    {% for subj in subjects %}
+                                        <option value="{{ subj.id }}">{{ subj.code }} - {{ subj.name }}</option>
+                                    {% endfor %}
+                                </select>
+                            </div>
+                        {% endif %}
+                    </div>
+
+                    {% if mode == 'edit' %}
+                        <!-- Active Status Toggle -->
+                        <div class="border-top pt-3 mt-3">
+                            <div class="form-check form-switch">
+                                <input class="form-check-input" type="checkbox" id="is_active" name="is_active" value="1" {% if user.is_active %}checked{% endif %}>
+                                <label class="form-check-label fw-semibold" for="is_active">Account Active & Enabled</label>
+                                <div class="form-text">Inactive users cannot log into the attendance portal.</div>
+                            </div>
+                        </div>
+                    {% endif %}
+
+                    <div class="d-flex justify-content-end gap-2 mt-4 pt-3 border-top">
+                        <a href="{{ url_for('admin_users') }}" class="btn btn-outline-secondary">Cancel</a>
+                        <button type="submit" class="btn btn-primary fw-semibold px-4">
+                            <i class="fa-solid fa-floppy-disk me-1"></i> {% if mode == 'create' %}Create User{% else %}Save Changes{% endif %}
+                        </button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

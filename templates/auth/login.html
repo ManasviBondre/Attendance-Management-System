@@ -1,0 +1,96 @@
+{% extends 'base.html' %}
+
+{% block title %}Login - Attendance Management System{% endblock %}
+
+{% block content %}
+<div class="auth-wrapper">
+    <div class="auth-card">
+        <div class="auth-header">
+            <div class="mb-2">
+                <i class="fa-solid fa-graduation-cap fa-2x"></i>
+            </div>
+            <h2>Attendance Management System</h2>
+            <p>Department of Computer Science & Engineering</p>
+        </div>
+
+        <div class="auth-body">
+            <form method="POST" action="{{ url_for('login', next=request.args.get('next')) }}">
+                <div class="mb-3">
+                    <label for="username_or_email" class="form-label fw-semibold">Username or Email</label>
+                    <div class="input-group">
+                        <span class="input-group-text bg-light text-muted">
+                            <i class="fa-solid fa-user"></i>
+                        </span>
+                        <input type="text" 
+                               class="form-control" 
+                               id="username_or_email" 
+                               name="username_or_email" 
+                               placeholder="e.g. admin or 22cs001 or prof.verma" 
+                               required 
+                               autofocus>
+                    </div>
+                </div>
+
+                <div class="mb-4">
+                    <label for="password" class="form-label fw-semibold">Password</label>
+                    <div class="input-group">
+                        <span class="input-group-text bg-light text-muted">
+                            <i class="fa-solid fa-lock"></i>
+                        </span>
+                        <input type="password" 
+                               class="form-control" 
+                               id="password" 
+                               name="password" 
+                               placeholder="Enter your password" 
+                               required>
+                        <button class="btn btn-outline-secondary toggle-password-btn" 
+                                type="button" 
+                                data-target="password" 
+                                title="Show / Hide Password">
+                            <i class="fa-solid fa-eye"></i>
+                        </button>
+                    </div>
+                </div>
+
+                <div class="d-grid mb-3">
+                    <button type="submit" class="btn btn-primary btn-lg fw-semibold shadow-sm">
+                        <i class="fa-solid fa-right-to-bracket me-2"></i> Log In
+                    </button>
+                </div>
+            </form>
+
+            <div class="text-center mt-3 pt-3 border-top">
+                <p class="text-muted mb-0">
+                    Don't have an account? 
+                    <a href="{{ url_for('register') }}" class="text-primary fw-semibold text-decoration-none">
+                        Register here
+                    </a>
+                </p>
+            </div>
+
+            <!-- Demo / Evaluation Test Credentials Helper Accordion -->
+            <div class="mt-4 pt-3 border-top">
+                <div class="accordion accordion-flush" id="demoAccountsAccordion">
+                    <div class="accordion-item bg-light rounded border">
+                        <h2 class="accordion-header" id="flush-headingOne">
+                            <button class="accordion-button collapsed py-2 px-3 bg-light text-muted small fw-semibold" type="button" data-bs-toggle="collapse" data-bs-target="#flush-collapseOne">
+                                <i class="fa-solid fa-key me-2 text-warning"></i> Quick Demo Test Credentials
+                            </button>
+                        </h2>
+                        <div id="flush-collapseOne" class="accordion-collapse collapse" data-bs-parent="#demoAccountsAccordion">
+                            <div class="accordion-body small py-2 px-3 text-secondary">
+                                <div class="mb-1"><strong>Admin:</strong> <code>admin</code> / <code>Admin@123</code></div>
+                                <div class="mb-1"><strong>Faculty:</strong> <code>prof.iyer</code> / <code>Password@123</code> (SEPM)</div>
+                                <div class="mb-1"><strong>Faculty:</strong> <code>dr.sharma</code> / <code>Password@123</code> (TOC)</div>
+                                <div class="mb-1"><strong>Student (High %):</strong> <code>22cs001</code> / <code>Password@123</code></div>
+                                <div><strong>Student (Defaulter %):</strong> <code>22cs003</code> / <code>Password@123</code></div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+        </div>
+    </div>
+</div>
+{% endblock %}

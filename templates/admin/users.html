@@ -1,0 +1,145 @@
+{% extends 'base.html' %}
+
+{% block title %}User Management - Attendance Management System{% endblock %}
+
+{% block content %}
+<div class="page-header d-flex justify-content-between align-items-center flex-wrap gap-2">
+    <div>
+        <h1><i class="fa-solid fa-users-gear text-primary me-2"></i>User Management</h1>
+        <p>Manage administrators, faculty members, and student academic profiles</p>
+    </div>
+    <div>
+        <a href="{{ url_for('admin_create_user') }}" class="btn btn-primary">
+            <i class="fa-solid fa-user-plus me-1"></i> Register New User
+        </a>
+    </div>
+</div>
+
+<!-- Filters and Search Toolbar -->
+<div class="card mb-4">
+    <div class="card-body">
+        <div class="row g-3 align-items-center">
+            <div class="col-md-6 col-lg-5">
+                <div class="btn-group w-100" role="group">
+                    <a href="{{ url_for('admin_users') }}" class="btn btn-outline-secondary {% if not selected_role %}active{% endif %}">
+                        All Users
+                    </a>
+                    <a href="{{ url_for('admin_users', role='student') }}" class="btn btn-outline-secondary {% if selected_role == 'student' %}active{% endif %}">
+                        Students
+                    </a>
+                    <a href="{{ url_for('admin_users', role='faculty') }}" class="btn btn-outline-secondary {% if selected_role == 'faculty' %}active{% endif %}">
+                        Faculty
+                    </a>
+                    <a href="{{ url_for('admin_users', role='admin') }}" class="btn btn-outline-secondary {% if selected_role == 'admin' %}active{% endif %}">
+                        Admins
+                    </a>
+                </div>
+            </div>
+            <div class="col-md-6 col-lg-7">
+                <div class="input-group">
+                    <span class="input-group-text bg-white text-muted"><i class="fa-solid fa-magnifying-glass"></i></span>
+                    <input type="text" 
+                           class="form-control table-search-input" 
+                           data-table="usersTable" 
+                           placeholder="Filter users dynamically by name, email, roll number, or faculty ID...">
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Users Table -->
+<div class="card">
+    <div class="card-header d-flex justify-content-between align-items-center">
+        <span class="fw-bold">
+            <i class="fa-solid fa-list me-2 text-primary"></i>Registered Users Directory ({{ users|length }} Total)
+        </span>
+    </div>
+    <div class="table-responsive">
+        <table class="table table-custom table-hover align-middle mb-0" id="usersTable">
+            <thead>
+                <tr>
+                    <th>Role</th>
+                    <th>Full Name</th>
+                    <th>ID / Roll Number</th>
+                    <th>Email & Username</th>
+                    <th>Department / Academic Details</th>
+                    <th class="text-center">Status</th>
+                    <th class="text-end">Actions</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for u in users %}
+                    <tr>
+                        <td>
+                            {% if u.role == 'admin' %}
+                                <span class="badge bg-danger-subtle text-danger border border-danger">Admin</span>
+                            {% elif u.role == 'faculty' %}
+                                <span class="badge bg-primary-subtle text-primary border border-primary">Faculty</span>
+                            {% else %}
+                                <span class="badge bg-success-subtle text-success border border-success">Student</span>
+                            {% endif %}
+                        </td>
+                        <td>
+                            <div class="fw-bold text-dark">{{ u.full_name }}</div>
+                            <small class="text-muted">{{ u.phone or 'No phone added' }}</small>
+                        </td>
+                        <td>
+                            {% if u.role == 'student' %}
+                                <span class="badge bg-dark-subtle text-dark border">{{ u.roll_number }}</span>
+                            {% elif u.role == 'faculty' %}
+                                <span class="badge bg-secondary-subtle text-secondary border">{{ u.faculty_id }}</span>
+                            {% else %}
+                                <span class="text-muted small">SYS-ADMIN</span>
+                            {% endif %}
+                        </td>
+                        <td>
+                            <div>{{ u.email }}</div>
+                            <small class="text-muted">@{{ u.username }}</small>
+                        </td>
+                        <td>
+                            {% if u.role == 'student' %}
+                                <small class="d-block">{{ u.student_dept }}</small>
+                                <small class="text-muted">Sem {{ u.semester }} | Sec {{ u.section }}</small>
+                            {% elif u.role == 'faculty' %}
+                                <small class="d-block">{{ u.faculty_dept }}</small>
+                                <small class="text-muted">{{ u.designation }}</small>
+                            {% else %}
+                                <small class="text-muted">System Administration</small>
+                            {% endif %}
+                        </td>
+                        <td class="text-center">
+                            {% if u.is_active %}
+                                <span class="badge bg-success">Active</span>
+                            {% else %}
+                                <span class="badge bg-secondary">Inactive</span>
+                            {% endif %}
+                        </td>
+                        <td class="text-end">
+                            <div class="btn-group btn-group-sm">
+                                <a href="{{ url_for('admin_edit_user', user_id=u.id) }}" class="btn btn-outline-primary" title="Edit User">
+                                    <i class="fa-solid fa-pen-to-square"></i>
+                                </a>
+                                
+                                <form method="POST" action="{{ url_for('admin_toggle_user_status', user_id=u.id) }}" class="d-inline">
+                                    <button type="submit" class="btn btn-outline-secondary" title="Toggle Status">
+                                        <i class="fa-solid {% if u.is_active %}fa-ban text-warning{% else %}fa-check text-success{% endif %}"></i>
+                                    </button>
+                                </form>
+
+                                {% if u.username != 'admin' %}
+                                    <form method="POST" action="{{ url_for('admin_delete_user', user_id=u.id) }}" class="d-inline" onsubmit="return confirm('Are you sure you want to delete {{ u.full_name }}? This will permanently remove their records.');">
+                                        <button type="submit" class="btn btn-outline-danger" title="Delete User">
+                                            <i class="fa-solid fa-trash-can"></i>
+                                        </button>
+                                    </form>
+                                {% endif %}
+                            </div>
+                        </td>
+                    </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+</div>
+{% endblock %}

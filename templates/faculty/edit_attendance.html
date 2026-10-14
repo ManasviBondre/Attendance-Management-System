@@ -1,0 +1,153 @@
+{% extends 'base.html' %}
+
+{% block title %}Edit Attendance - {{ session_data.subject_name }} | AMS{% endblock %}
+
+{% block content %}
+<div class="page-header d-flex justify-content-between align-items-center flex-wrap gap-2">
+    <div>
+        <h1><i class="fa-solid fa-pen-to-square text-primary me-2"></i>Edit Attendance Session</h1>
+        <p>Modify session details and rectify student attendance records</p>
+    </div>
+    <div>
+        <a href="{{ url_for('faculty_view_session', session_id=session_data.id) }}" class="btn btn-outline-secondary">
+            <i class="fa-solid fa-eye me-1"></i> View Record Roster
+        </a>
+    </div>
+</div>
+
+<form method="POST" id="attendanceMarkerForm">
+    <!-- Session Metadata Card -->
+    <div class="card mb-4">
+        <div class="card-header bg-white py-3">
+            <span class="fw-bold text-primary"><i class="fa-solid fa-sliders me-2"></i>Session Details</span>
+        </div>
+        <div class="card-body">
+            <div class="row g-3">
+                <div class="col-md-4">
+                    <label class="form-label fw-semibold">Subject</label>
+                    <input type="text" class="form-control bg-light" value="{{ session_data.subject_code }} - {{ session_data.subject_name }}" readonly>
+                </div>
+                <div class="col-md-3">
+                    <label for="session_date" class="form-label fw-semibold">Session Date <span class="text-danger">*</span></label>
+                    <input type="date" class="form-control" id="session_date" name="session_date" value="{{ session_data.session_date }}" required>
+                </div>
+                <div class="col-md-3">
+                    <label for="session_slot" class="form-label fw-semibold">Time Slot / Period <span class="text-danger">*</span></label>
+                    <select class="form-select" id="session_slot" name="session_slot">
+                        <option value="09:00 - 10:00 AM" {% if session_data.session_slot == '09:00 - 10:00 AM' %}selected{% endif %}>09:00 - 10:00 AM (Slot 1)</option>
+                        <option value="10:00 - 11:00 AM" {% if session_data.session_slot == '10:00 - 11:00 AM' %}selected{% endif %}>10:00 - 11:00 AM (Slot 2)</option>
+                        <option value="11:15 - 12:15 PM" {% if session_data.session_slot == '11:15 - 12:15 PM' %}selected{% endif %}>11:15 - 12:15 PM (Slot 3)</option>
+                        <option value="01:15 - 02:15 PM" {% if session_data.session_slot == '01:15 - 02:15 PM' %}selected{% endif %}>01:15 - 02:15 PM (Slot 4)</option>
+                        <option value="02:15 - 03:15 PM" {% if session_data.session_slot == '02:15 - 03:15 PM' %}selected{% endif %}>02:15 - 03:15 PM (Slot 5)</option>
+                    </select>
+                </div>
+                <div class="col-md-2">
+                    <label class="form-label fw-semibold">Recorded By</label>
+                    <input type="text" class="form-control bg-light" value="{{ session_data.faculty_name }}" readonly>
+                </div>
+                <div class="col-12">
+                    <label for="topic" class="form-label fw-semibold">Lecture Topic / Notes</label>
+                    <input type="text" class="form-control" id="topic" name="topic" value="{{ session_data.topic }}">
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Live Counter Bar (Sticky) -->
+    <div class="live-counter-bar">
+        <div class="d-flex align-items-center gap-3 flex-wrap">
+            <span class="fw-bold text-dark"><i class="fa-solid fa-users me-1 text-primary"></i>Updated Roster:</span>
+            <span class="badge bg-light text-dark border fs-6">
+                Total: <span id="liveTotalCount" class="fw-bold">{{ records|length }}</span>
+            </span>
+            <span class="badge bg-success-subtle text-success border border-success fs-6">
+                Present: <span id="livePresentCount" class="fw-bold">0</span>
+            </span>
+            <span class="badge bg-danger-subtle text-danger border border-danger fs-6">
+                Absent: <span id="liveAbsentCount" class="fw-bold">0</span>
+            </span>
+            <span class="badge bg-primary text-white fs-6">
+                Attendance Rate: <span id="livePercentage" class="fw-bold">0%</span>
+            </span>
+        </div>
+
+        <div class="d-flex align-items-center gap-2 flex-wrap">
+            <button type="button" class="btn btn-outline-success btn-sm fw-semibold" id="markAllPresentBtn">
+                <i class="fa-solid fa-check-double me-1"></i> Mark All Present
+            </button>
+            <button type="button" class="btn btn-outline-danger btn-sm fw-semibold" id="markAllAbsentBtn">
+                <i class="fa-solid fa-xmark me-1"></i> Mark All Absent
+            </button>
+            <div class="input-group input-group-sm" style="width: 220px;">
+                <span class="input-group-text bg-light"><i class="fa-solid fa-search"></i></span>
+                <input type="text" class="form-control table-search-input" data-table="editStudentsTable" placeholder="Filter student...">
+            </div>
+        </div>
+    </div>
+
+    <!-- Student Records Table -->
+    <div class="card mb-4">
+        <div class="card-header bg-white d-flex justify-content-between align-items-center py-3">
+            <span class="fw-bold">
+                <i class="fa-solid fa-user-pen text-primary me-2"></i>
+                Student Attendance Records ({{ records|length }} Records)
+            </span>
+            <small class="text-muted"><i class="fa-solid fa-circle-info me-1"></i>Changes are saved safely to SQLite</small>
+        </div>
+        <div class="table-responsive">
+            <table class="table table-custom table-hover align-middle mb-0" id="editStudentsTable">
+                <thead>
+                    <tr>
+                        <th style="width: 60px;">#</th>
+                        <th style="width: 140px;">Roll Number</th>
+                        <th>Student Name</th>
+                        <th class="text-center" style="width: 200px;">Attendance Status</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for rec in records %}
+                        <tr>
+                            <td class="text-muted fw-bold">{{ loop.index }}</td>
+                            <td>
+                                <span class="badge bg-light text-dark border fs-6 fw-bold">{{ rec.roll_number }}</span>
+                            </td>
+                            <td>
+                                <div class="fw-bold text-dark">{{ rec.student_name }}</div>
+                            </td>
+                            <td class="text-center">
+                                <div class="attendance-toggle">
+                                    <input type="radio" 
+                                           id="present_{{ rec.student_id }}" 
+                                           name="status_{{ rec.student_id }}" 
+                                           value="Present" 
+                                           {% if rec.status == 'Present' %}checked{% endif %}>
+                                    <label for="present_{{ rec.student_id }}" class="present-label">
+                                        <i class="fa-solid fa-check me-1"></i> Present
+                                    </label>
+
+                                    <input type="radio" 
+                                           id="absent_{{ rec.student_id }}" 
+                                           name="status_{{ rec.student_id }}" 
+                                           value="Absent"
+                                           {% if rec.status == 'Absent' %}checked{% endif %}>
+                                    <label for="absent_{{ rec.student_id }}" class="absent-label">
+                                        <i class="fa-solid fa-xmark me-1"></i> Absent
+                                    </label>
+                                </div>
+                            </td>
+                        </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+        <div class="card-footer bg-light p-3 d-flex justify-content-between align-items-center">
+            <a href="javascript:history.back()" class="btn btn-outline-secondary">
+                <i class="fa-solid fa-xmark me-1"></i> Cancel
+            </a>
+            <button type="submit" class="btn btn-primary btn-lg fw-semibold px-4 shadow-sm">
+                <i class="fa-solid fa-floppy-disk me-2"></i> Update Attendance
+            </button>
+        </div>
+    </div>
+</form>
+{% endblock %}

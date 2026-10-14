@@ -1,0 +1,164 @@
+{% extends 'base.html' %}
+
+{% block title %}Mark Attendance - Attendance Management System{% endblock %}
+
+{% block content %}
+<div class="page-header d-flex justify-content-between align-items-center flex-wrap gap-2">
+    <div>
+        <h1><i class="fa-solid fa-clipboard-check text-primary me-2"></i>Record Class Attendance</h1>
+        <p>Mark student attendance for your assigned academic subjects</p>
+    </div>
+    <div class="d-flex gap-2">
+        <a href="{{ url_for('faculty_session_history', subject_id=selected_subject_id) }}" class="btn btn-outline-secondary">
+            <i class="fa-solid fa-clock-rotate-left me-1"></i> View Past Sessions
+        </a>
+    </div>
+</div>
+
+<form method="POST" action="{{ url_for('faculty_mark_attendance') }}" id="attendanceMarkerForm">
+    <!-- Session Metadata Card -->
+    <div class="card mb-4">
+        <div class="card-header bg-white py-3">
+            <span class="fw-bold text-primary"><i class="fa-solid fa-sliders me-2"></i>Lecture Details</span>
+        </div>
+        <div class="card-body">
+            <div class="row g-3">
+                <div class="col-md-4">
+                    <label for="subject_id" class="form-label fw-semibold">Subject <span class="text-danger">*</span></label>
+                    <select class="form-select" id="subject_id" name="subject_id" onchange="window.location.href='{{ url_for('faculty_mark_attendance') }}?subject_id=' + this.value;">
+                        {% for subj in assigned_subjects %}
+                            <option value="{{ subj.id }}" {% if selected_subject_id == subj.id %}selected{% endif %}>
+                                {{ subj.code }} - {{ subj.name }}
+                            </option>
+                        {% endfor %}
+                    </select>
+                </div>
+                <div class="col-md-3">
+                    <label for="session_date" class="form-label fw-semibold">Lecture Date <span class="text-danger">*</span></label>
+                    <input type="date" class="form-control" id="session_date" name="session_date" value="{{ current_date }}" required>
+                </div>
+                <div class="col-md-3">
+                    <label for="session_slot" class="form-label fw-semibold">Time Slot / Period <span class="text-danger">*</span></label>
+                    <select class="form-select" id="session_slot" name="session_slot">
+                        <option value="09:00 - 10:00 AM" selected>09:00 - 10:00 AM (Slot 1)</option>
+                        <option value="10:00 - 11:00 AM">10:00 - 11:00 AM (Slot 2)</option>
+                        <option value="11:15 - 12:15 PM">11:15 - 12:15 PM (Slot 3)</option>
+                        <option value="01:15 - 02:15 PM">01:15 - 02:15 PM (Slot 4)</option>
+                        <option value="02:15 - 03:15 PM">02:15 - 03:15 PM (Slot 5)</option>
+                    </select>
+                </div>
+                <div class="col-md-2">
+                    <label class="form-label fw-semibold">Class Group</label>
+                    <input type="text" class="form-control bg-light" value="CSE 6th Sem - Sec A" readonly>
+                </div>
+                <div class="col-12">
+                    <label for="topic" class="form-label fw-semibold">Lecture Topic / Notes</label>
+                    <input type="text" class="form-control" id="topic" name="topic" placeholder="e.g. Unit 3: Dynamic Programming / Requirement Elicitation Techniques" value="Curriculum Syllabus Lecture">
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Live Counter & Fast Shortcuts Bar (Sticky) -->
+    <div class="live-counter-bar">
+        <div class="d-flex align-items-center gap-3 flex-wrap">
+            <span class="fw-bold text-dark"><i class="fa-solid fa-users me-1 text-primary"></i>Roster Summary:</span>
+            <span class="badge bg-light text-dark border fs-6">
+                Total: <span id="liveTotalCount" class="fw-bold">{{ students|length }}</span>
+            </span>
+            <span class="badge bg-success-subtle text-success border border-success fs-6">
+                Present: <span id="livePresentCount" class="fw-bold">{{ students|length }}</span>
+            </span>
+            <span class="badge bg-danger-subtle text-danger border border-danger fs-6">
+                Absent: <span id="liveAbsentCount" class="fw-bold">0</span>
+            </span>
+            <span class="badge bg-primary text-white fs-6">
+                Attendance Rate: <span id="livePercentage" class="fw-bold">100.0%</span>
+            </span>
+        </div>
+
+        <div class="d-flex align-items-center gap-2 flex-wrap">
+            <button type="button" class="btn btn-outline-success btn-sm fw-semibold" id="markAllPresentBtn">
+                <i class="fa-solid fa-check-double me-1"></i> Mark All Present
+            </button>
+            <button type="button" class="btn btn-outline-danger btn-sm fw-semibold" id="markAllAbsentBtn">
+                <i class="fa-solid fa-xmark me-1"></i> Mark All Absent
+            </button>
+            <div class="input-group input-group-sm" style="width: 220px;">
+                <span class="input-group-text bg-light"><i class="fa-solid fa-search"></i></span>
+                <input type="text" class="form-control table-search-input" data-table="attendanceStudentsTable" placeholder="Filter student...">
+            </div>
+        </div>
+    </div>
+
+    <!-- Student Attendance Roster Table -->
+    <div class="card mb-4">
+        <div class="card-header bg-white d-flex justify-content-between align-items-center py-3">
+            <span class="fw-bold">
+                <i class="fa-solid fa-user-graduate text-primary me-2"></i>
+                Student Attendance Roster ({{ students|length }} Enrolled Students)
+            </span>
+            <small class="text-muted"><i class="fa-solid fa-circle-info me-1"></i>Default is set to Present</small>
+        </div>
+        <div class="table-responsive">
+            <table class="table table-custom table-hover align-middle mb-0" id="attendanceStudentsTable">
+                <thead>
+                    <tr>
+                        <th style="width: 60px;">#</th>
+                        <th style="width: 140px;">Roll Number</th>
+                        <th>Student Full Name</th>
+                        <th>Email</th>
+                        <th style="width: 120px;">Section</th>
+                        <th class="text-center" style="width: 200px;">Attendance Status</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for st in students %}
+                        <tr>
+                            <td class="text-muted fw-bold">{{ loop.index }}</td>
+                            <td>
+                                <span class="badge bg-light text-dark border fs-6 fw-bold">{{ st.roll_number }}</span>
+                            </td>
+                            <td>
+                                <div class="fw-bold text-dark">{{ st.full_name }}</div>
+                            </td>
+                            <td><small class="text-muted">{{ st.email }}</small></td>
+                            <td>
+                                <span class="badge bg-secondary-subtle text-secondary">Sem {{ st.semester }} - {{ st.section }}</span>
+                            </td>
+                            <td class="text-center">
+                                <div class="attendance-toggle">
+                                    <input type="radio" 
+                                           id="present_{{ st.student_id }}" 
+                                           name="status_{{ st.student_id }}" 
+                                           value="Present" 
+                                           checked>
+                                    <label for="present_{{ st.student_id }}" class="present-label">
+                                        <i class="fa-solid fa-check me-1"></i> Present
+                                    </label>
+
+                                    <input type="radio" 
+                                           id="absent_{{ st.student_id }}" 
+                                           name="status_{{ st.student_id }}" 
+                                           value="Absent">
+                                    <label for="absent_{{ st.student_id }}" class="absent-label">
+                                        <i class="fa-solid fa-xmark me-1"></i> Absent
+                                    </label>
+                                </div>
+                            </td>
+                        </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+        <div class="card-footer bg-light p-3 d-flex justify-content-between align-items-center">
+            <a href="{{ url_for('faculty_dashboard') }}" class="btn btn-outline-secondary">
+                <i class="fa-solid fa-xmark me-1"></i> Cancel
+            </a>
+            <button type="submit" class="btn btn-primary btn-lg fw-semibold px-4 shadow-sm">
+                <i class="fa-solid fa-cloud-arrow-up me-2"></i> Save & Submit Attendance
+            </button>
+        </div>
+    </div>
+</form>
+{% endblock %}

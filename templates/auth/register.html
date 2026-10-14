@@ -1,0 +1,173 @@
+{% extends 'base.html' %}
+
+{% block title %}Register - Attendance Management System{% endblock %}
+
+{% block content %}
+<div class="auth-wrapper">
+    <div class="auth-card auth-card-wide my-4">
+        <div class="auth-header">
+            <div class="mb-2">
+                <i class="fa-solid fa-user-plus fa-2x"></i>
+            </div>
+            <h2>Create an Account</h2>
+            <p>Join the Attendance Management System portal</p>
+        </div>
+
+        <div class="auth-body">
+            <form method="POST" action="{{ url_for('register') }}" id="registrationForm">
+                <!-- Role Selection -->
+                <div class="mb-3">
+                    <label for="registrationRoleSelect" class="form-label fw-semibold">Select Account Role <span class="text-danger">*</span></label>
+                    <select class="form-select form-select-lg" id="registrationRoleSelect" name="role" required>
+                        <option value="student" selected>Student</option>
+                        <option value="faculty">Faculty Member</option>
+                        <option value="admin">Administrator (Protected)</option>
+                    </select>
+                    <div class="form-text">Choose your designated role in the institution.</div>
+                </div>
+
+                <!-- Common User Details -->
+                <div class="row">
+                    <div class="col-md-6 mb-3">
+                        <label for="full_name" class="form-label fw-semibold">Full Name <span class="text-danger">*</span></label>
+                        <input type="text" class="form-control" id="full_name" name="full_name" placeholder="e.g. John Doe" required>
+                    </div>
+                    <div class="col-md-6 mb-3">
+                        <label for="username" class="form-label fw-semibold">Username <span class="text-danger">*</span></label>
+                        <input type="text" class="form-control" id="username" name="username" placeholder="e.g. jdoe22" required>
+                    </div>
+                </div>
+
+                <div class="row">
+                    <div class="col-md-6 mb-3">
+                        <label for="email" class="form-label fw-semibold">Email Address <span class="text-danger">*</span></label>
+                        <input type="email" class="form-control" id="email" name="email" placeholder="e.g. jdoe@institution.edu" required>
+                    </div>
+                    <div class="col-md-6 mb-3">
+                        <label for="phone" class="form-label fw-semibold">Phone Number</label>
+                        <input type="tel" class="form-control" id="phone" name="phone" placeholder="e.g. +91 9876543210">
+                    </div>
+                </div>
+
+                <div class="row">
+                    <div class="col-md-6 mb-3">
+                        <label for="password" class="form-label fw-semibold">Password <span class="text-danger">*</span></label>
+                        <div class="input-group">
+                            <input type="password" class="form-control" id="password" name="password" minlength="6" placeholder="Min 6 characters" required>
+                            <button class="btn btn-outline-secondary toggle-password-btn" type="button" data-target="password">
+                                <i class="fa-solid fa-eye"></i>
+                            </button>
+                        </div>
+                    </div>
+                    <div class="col-md-6 mb-3">
+                        <label for="confirm_password" class="form-label fw-semibold">Confirm Password <span class="text-danger">*</span></label>
+                        <div class="input-group">
+                            <input type="password" class="form-control" id="confirm_password" name="confirm_password" minlength="6" placeholder="Confirm password" required>
+                            <button class="btn btn-outline-secondary toggle-password-btn" type="button" data-target="confirm_password">
+                                <i class="fa-solid fa-eye"></i>
+                            </button>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- 1. Student Specific Fields -->
+                <div id="studentSpecificFields" class="border-top pt-3 mt-2">
+                    <h6 class="fw-bold text-primary mb-3"><i class="fa-solid fa-id-badge me-2"></i>Student Academic Details</h6>
+                    <div class="row">
+                        <div class="col-md-6 mb-3">
+                            <label for="roll_number" class="form-label fw-semibold">University Roll Number <span class="text-danger">*</span></label>
+                            <input type="text" class="form-control text-uppercase" id="roll_number" name="roll_number" placeholder="e.g. 22CS046">
+                            <div class="form-text">Your unique university registration/roll number.</div>
+                        </div>
+                        <div class="col-md-6 mb-3">
+                            <label for="department" class="form-label fw-semibold">Department</label>
+                            <input type="text" class="form-control" id="department" name="department" value="Computer Science & Engineering">
+                        </div>
+                    </div>
+                    <div class="row">
+                        <div class="col-md-4 mb-3">
+                            <label for="semester" class="form-label fw-semibold">Semester</label>
+                            <select class="form-select" id="semester" name="semester">
+                                <option value="1">Semester 1</option>
+                                <option value="2">Semester 2</option>
+                                <option value="3">Semester 3</option>
+                                <option value="4">Semester 4</option>
+                                <option value="5">Semester 5</option>
+                                <option value="6" selected>Semester 6</option>
+                                <option value="7">Semester 7</option>
+                                <option value="8">Semester 8</option>
+                            </select>
+                        </div>
+                        <div class="col-md-4 mb-3">
+                            <label for="section" class="form-label fw-semibold">Section / Group</label>
+                            <input type="text" class="form-control" id="section" name="section" value="A">
+                        </div>
+                        <div class="col-md-4 mb-3">
+                            <label for="batch_year" class="form-label fw-semibold">Batch Year</label>
+                            <input type="text" class="form-control" id="batch_year" name="batch_year" value="2022-2026">
+                        </div>
+                    </div>
+                </div>
+
+                <!-- 2. Faculty Specific Fields -->
+                <div id="facultySpecificFields" class="border-top pt-3 mt-2" style="display: none;">
+                    <h6 class="fw-bold text-primary mb-3"><i class="fa-solid fa-chalkboard-user me-2"></i>Faculty Academic Details</h6>
+                    <div class="row">
+                        <div class="col-md-6 mb-3">
+                            <label for="faculty_id" class="form-label fw-semibold">Faculty Employee ID <span class="text-danger">*</span></label>
+                            <input type="text" class="form-control text-uppercase" id="faculty_id" name="faculty_id" placeholder="e.g. FAC006">
+                        </div>
+                        <div class="col-md-6 mb-3">
+                            <label for="designation" class="form-label fw-semibold">Designation</label>
+                            <select class="form-select" id="designation" name="designation">
+                                <option value="Assistant Professor" selected>Assistant Professor</option>
+                                <option value="Associate Professor">Associate Professor</option>
+                                <option value="Professor">Professor</option>
+                                <option value="Professor & HOD">Professor & HOD</option>
+                                <option value="Lecturer">Lecturer</option>
+                            </select>
+                        </div>
+                    </div>
+                    <div class="mb-3">
+                        <label for="subject_id" class="form-label fw-semibold">Primary Teaching Subject (Optional Assignment)</label>
+                        <select class="form-select" id="subject_id" name="subject_id">
+                            <option value="">-- Select Subject (Can be assigned later by Admin) --</option>
+                            {% for subj in subjects %}
+                                <option value="{{ subj.id }}">{{ subj.code }} - {{ subj.name }}</option>
+                            {% endfor %}
+                        </select>
+                    </div>
+                </div>
+
+                <!-- 3. Admin Security Key -->
+                <div id="adminSpecificFields" class="border-top pt-3 mt-2" style="display: none;">
+                    <div class="alert alert-warning">
+                        <i class="fa-solid fa-shield-halved me-2"></i>
+                        <strong>Security Safeguard:</strong> Administrator registration requires the master security key.
+                    </div>
+                    <div class="mb-3">
+                        <label for="admin_key" class="form-label fw-semibold">Administrator Master Key <span class="text-danger">*</span></label>
+                        <input type="password" class="form-control" id="admin_key" name="admin_key" placeholder="Enter administrative authorization token">
+                        <div class="form-text">Default evaluation security key: <code>ADMIN@SEPM2026</code></div>
+                    </div>
+                </div>
+
+                <div class="d-grid mt-4">
+                    <button type="submit" class="btn btn-primary btn-lg fw-semibold shadow-sm">
+                        <i class="fa-solid fa-user-check me-2"></i> Complete Registration
+                    </button>
+                </div>
+            </form>
+
+            <div class="text-center mt-3 pt-3 border-top">
+                <p class="text-muted mb-0">
+                    Already registered? 
+                    <a href="{{ url_for('login') }}" class="text-primary fw-semibold text-decoration-none">
+                        Log in here
+                    </a>
+                </p>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

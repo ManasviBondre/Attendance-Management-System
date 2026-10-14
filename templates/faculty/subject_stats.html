@@ -1,0 +1,135 @@
+{% extends 'base.html' %}
+
+{% block title %}Subject Statistics - {{ subject.name }} | AMS{% endblock %}
+
+{% block content %}
+<div class="page-header d-flex justify-content-between align-items-center flex-wrap gap-2">
+    <div>
+        <h1>
+            <span class="badge bg-primary fs-4 me-2">{{ subject.code }}</span>
+            {{ subject.name }}
+        </h1>
+        <p>{{ subject.department }} &bull; Semester {{ subject.semester }} &bull; {{ subject.credits }} Credits</p>
+    </div>
+    <div class="d-flex gap-2 no-print">
+        <a href="{{ url_for('faculty_mark_attendance', subject_id=subject.id) }}" class="btn btn-primary">
+            <i class="fa-solid fa-clipboard-check me-1"></i> Mark Attendance
+        </a>
+        <a href="{{ url_for('export_subject_csv', subject_id=subject.id) }}" class="btn btn-outline-success">
+            <i class="fa-solid fa-file-arrow-down me-1"></i> Export Register (CSV)
+        </a>
+        <button onclick="window.print()" class="btn btn-outline-secondary">
+            <i class="fa-solid fa-print me-1"></i> Print
+        </button>
+    </div>
+</div>
+
+<!-- Stats Overview Cards -->
+<div class="row g-3 mb-4">
+    <div class="col-sm-6 col-md-3">
+        <div class="stat-card stat-info h-100">
+            <div class="stat-value text-primary">{{ total_conducted }}</div>
+            <div class="stat-label">Total Lectures Held</div>
+            <div class="text-muted small mt-1"><i class="fa-solid fa-calendar me-1"></i>Class Sessions</div>
+        </div>
+    </div>
+    <div class="col-sm-6 col-md-3">
+        <div class="stat-card stat-info h-100">
+            <div class="stat-value text-secondary">{{ student_rows|length }}</div>
+            <div class="stat-label">Enrolled Students</div>
+            <div class="text-muted small mt-1"><i class="fa-solid fa-users me-1"></i>Class Strength</div>
+        </div>
+    </div>
+    <div class="col-sm-6 col-md-3">
+        <div class="stat-card {% if avg_pct >= 75 %}stat-success{% else %}stat-danger{% endif %} h-100">
+            <div class="stat-value {% if avg_pct >= 75 %}text-success{% else %}text-danger{% endif %}">{{ avg_pct }}%</div>
+            <div class="stat-label">Class Average Attendance</div>
+            <div class="text-muted small mt-1"><i class="fa-solid fa-chart-line me-1"></i>Mean Ratio</div>
+        </div>
+    </div>
+    <div class="col-sm-6 col-md-3">
+        <div class="stat-card stat-danger h-100">
+            <div class="stat-value text-danger">{{ defaulter_count }}</div>
+            <div class="stat-label">Defaulters (&lt;75%)</div>
+            <div class="text-muted small mt-1"><i class="fa-solid fa-triangle-exclamation me-1"></i>Shortage Risk</div>
+        </div>
+    </div>
+</div>
+
+<!-- Search and Filter Toolbar -->
+<div class="card mb-4 no-print">
+    <div class="card-body">
+        <div class="row g-3 align-items-center">
+            <div class="col-md-8">
+                <div class="input-group">
+                    <span class="input-group-text bg-white"><i class="fa-solid fa-magnifying-glass"></i></span>
+                    <input type="text" 
+                           class="form-control table-search-input" 
+                           data-table="subjectStudentsStatsTable" 
+                           placeholder="Filter student by roll number, student name, or status (Eligible / Defaulter)...">
+                </div>
+            </div>
+            <div class="col-md-4 text-md-end text-muted small">
+                Showing all enrolled students in alphabetical/roll order
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Student-wise Attendance Register Table -->
+<div class="card">
+    <div class="card-header bg-white d-flex justify-content-between align-items-center py-3">
+        <span class="fw-bold"><i class="fa-solid fa-table-list me-2 text-primary"></i>Student Attendance Summary & Eligibility</span>
+        <span class="badge bg-light text-dark border">Threshold: {{ attendance_threshold }}%</span>
+    </div>
+    <div class="table-responsive">
+        <table class="table table-custom table-hover align-middle mb-0" id="subjectStudentsStatsTable">
+            <thead>
+                <tr>
+                    <th style="width: 60px;">#</th>
+                    <th style="width: 140px;">Roll Number</th>
+                    <th>Student Full Name</th>
+                    <th>Email</th>
+                    <th class="text-center" style="width: 130px;">Lectures Held</th>
+                    <th class="text-center" style="width: 120px;">Attended</th>
+                    <th class="text-center" style="width: 120px;">Missed</th>
+                    <th class="text-center" style="width: 180px;">Attendance %</th>
+                    <th class="text-center" style="width: 150px;">Status</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for s in student_rows %}
+                    <tr class="{% if s.is_defaulter %}table-danger-subtle{% endif %}">
+                        <td class="text-muted">{{ loop.index }}</td>
+                        <td>
+                            <span class="badge bg-light text-dark border fs-6 fw-bold">{{ s.roll_number }}</span>
+                        </td>
+                        <td>
+                            <div class="fw-bold text-dark">{{ s.full_name }}</div>
+                        </td>
+                        <td><small class="text-muted">{{ s.email }}</small></td>
+                        <td class="text-center fw-bold">{{ s.total_conducted }}</td>
+                        <td class="text-center text-success fw-bold">{{ s.attended }}</td>
+                        <td class="text-center text-danger fw-bold">{{ s.missed }}</td>
+                        <td class="text-center">
+                            <div class="d-flex align-items-center justify-content-center gap-2">
+                                <span class="fw-bold {% if s.percentage >= 75 %}text-success{% else %}text-danger{% endif %}">{{ s.percentage }}%</span>
+                                <div class="attendance-progress" style="width: 70px;">
+                                    <div class="attendance-progress-bar {% if s.percentage >= 75 %}progress-safe{% else %}progress-danger{% endif %}" style="width: {{ s.percentage }}%;"></div>
+                                </div>
+                            </div>
+                        </td>
+                        <td class="text-center">
+                            {% if s.is_defaulter %}
+                                <span class="badge-defaulter"><i class="fa-solid fa-triangle-exclamation me-1"></i>Defaulter</span>
+                            {% else %}
+                                <span class="badge-eligible"><i class="fa-solid fa-check me-1"></i>Eligible</span>
+                            {% endif %}
+                        </td>
+                    </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+</div>
+{% endblock %}
